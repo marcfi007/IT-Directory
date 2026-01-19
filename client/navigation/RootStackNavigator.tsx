@@ -4,6 +4,7 @@ import MainTabNavigator from "@/navigation/MainTabNavigator";
 import LoginScreen from "@/screens/LoginScreen";
 import MarketDetailScreen from "@/screens/MarketDetailScreen";
 import AddInfoScreen from "@/screens/AddInfoScreen";
+import AddMarketScreen from "@/screens/AddMarketScreen";
 import AdminPanelScreen from "@/screens/AdminPanelScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,6 +14,7 @@ export type RootStackParamList = {
   Main: undefined;
   MarketDetail: { marketId: string };
   AddInfo: { marketId: string | undefined };
+  AddMarket: undefined;
   AdminPanel: undefined;
 };
 
@@ -46,6 +48,14 @@ export default function RootStackNavigator() {
             options={{
               presentation: "modal",
               headerTitle: "Info hinzufuegen",
+            }}
+          />
+          <Stack.Screen
+            name="AddMarket"
+            component={AddMarketScreen}
+            options={{
+              presentation: "modal",
+              headerTitle: "Neuer Markt",
             }}
           />
           <Stack.Screen

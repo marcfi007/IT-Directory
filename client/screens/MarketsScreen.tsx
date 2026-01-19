@@ -1,19 +1,21 @@
-import React, { useCallback } from "react";
-import { FlatList, View, StyleSheet, RefreshControl } from "react-native";
+import React, { useCallback, useState } from "react";
+import { FlatList, View, StyleSheet, RefreshControl, Pressable, Modal } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import { Feather } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import Animated, { FadeInDown, FadeIn, FadeOut } from "react-native-reanimated";
 import { SearchBar } from "@/components/SearchBar";
 import { MarketCard } from "@/components/MarketCard";
 import { EmptyState } from "@/components/EmptyState";
-import { FAB } from "@/components/FAB";
+import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { useMarketContext } from "@/contexts/MarketContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { Spacing } from "@/constants/theme";
+import { Spacing, BorderRadius, Shadows } from "@/constants/theme";
 import { Market } from "@/types";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
@@ -35,15 +37,29 @@ export default function MarketsScreen() {
     refresh,
   } = useMarketContext();
 
+  const [showMenu, setShowMenu] = useState(false);
   const pendingInfos = getPendingInfos();
 
   const handleMarketPress = useCallback((market: Market) => {
     navigation.navigate("MarketDetail", { marketId: market.id });
   }, [navigation]);
 
+  const handleAddMarket = useCallback(() => {
+    setShowMenu(false);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    navigation.navigate("AddMarket");
+  }, [navigation]);
+
   const handleAddInfo = useCallback(() => {
+    setShowMenu(false);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     navigation.navigate("AddInfo", { marketId: undefined });
   }, [navigation]);
+
+  const toggleMenu = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setShowMenu(!showMenu);
+  }, [showMenu]);
 
   const renderItem = useCallback(({ item, index }: { item: Market; index: number }) => {
     const hasPendingInfo = pendingInfos.some((info) => info.marketId === item.id);
@@ -65,9 +81,11 @@ export default function MarketsScreen() {
         image={require("../../assets/images/empty-markets.png")}
         title="Keine Maerkte gefunden"
         description={searchQuery ? "Versuchen Sie eine andere Suche" : "Es wurden noch keine Maerkte angelegt"}
+        actionLabel="Markt hinzufuegen"
+        onAction={handleAddMarket}
       />
     );
-  }, [isLoading, searchQuery]);
+  }, [isLoading, searchQuery, handleAddMarket]);
 
   const renderHeader = useCallback(() => (
     <View style={styles.searchContainer}>
@@ -106,7 +124,56 @@ export default function MarketsScreen() {
           />
         }
       />
-      <FAB icon="plus" onPress={handleAddInfo} bottom={tabBarHeight + Spacing.lg} />
+
+      {showMenu ? (
+        <Pressable 
+          style={styles.menuOverlay} 
+          onPress={() => setShowMenu(false)}
+        >
+          <Animated.View 
+            entering={FadeIn.duration(150)}
+            exiting={FadeOut.duration(100)}
+            style={[styles.menuContainer, { bottom: tabBarHeight + 80 }]}
+          >
+            <Pressable
+              onPress={handleAddMarket}
+              style={[styles.menuItem, { backgroundColor: theme.cardBackground }, Shadows.card]}
+            >
+              <View style={[styles.menuIcon, { backgroundColor: theme.primary }]}>
+                <Feather name="shopping-bag" size={18} color="#FFFFFF" />
+              </View>
+              <ThemedText style={styles.menuLabel}>Neuen Markt anlegen</ThemedText>
+            </Pressable>
+            <Pressable
+              onPress={handleAddInfo}
+              style={[styles.menuItem, { backgroundColor: theme.cardBackground }, Shadows.card]}
+            >
+              <View style={[styles.menuIcon, { backgroundColor: theme.accent }]}>
+                <Feather name="file-plus" size={18} color="#FFFFFF" />
+              </View>
+              <ThemedText style={styles.menuLabel}>Info hinzufuegen</ThemedText>
+            </Pressable>
+          </Animated.View>
+        </Pressable>
+      ) : null}
+
+      <Pressable
+        onPress={toggleMenu}
+        style={[
+          styles.fab,
+          { 
+            backgroundColor: showMenu ? theme.error : theme.primary, 
+            bottom: tabBarHeight + Spacing.lg,
+          },
+          Shadows.fab,
+        ]}
+      >
+        <Feather 
+          name={showMenu ? "x" : "plus"} 
+          size={24} 
+          color="#FFFFFF" 
+        />
+      </Pressable>
     </View>
   );
 }
@@ -123,5 +190,43 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     marginBottom: Spacing.lg,
+  },
+  menuOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.3)",
+  },
+  menuContainer: {
+    position: "absolute",
+    right: Spacing.lg,
+    gap: Spacing.sm,
+  },
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    minWidth: 200,
+  },
+  menuIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: Spacing.md,
+  },
+  menuLabel: {
+    fontSize: 15,
+    fontWeight: "500",
+  },
+  fab: {
+    position: "absolute",
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

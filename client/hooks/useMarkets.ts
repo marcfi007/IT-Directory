@@ -250,6 +250,33 @@ export function useMarkets() {
     [marketInfos]
   );
 
+  const addMarket = useCallback(
+    async (marketData: Omit<Market, "id" | "createdAt" | "updatedAt">, userId: string, userName: string) => {
+      const newMarket: Market = {
+        ...marketData,
+        id: Date.now().toString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      const updatedMarkets = [newMarket, ...markets];
+      setMarkets(updatedMarkets);
+      await AsyncStorage.setItem(MARKETS_KEY, JSON.stringify(updatedMarkets));
+
+      await addActivityLog({
+        action: "add",
+        description: `Neuer Markt angelegt: ${marketData.name}`,
+        marketId: newMarket.id,
+        marketName: marketData.name,
+        userId,
+        userName,
+      });
+
+      return newMarket;
+    },
+    [markets, addActivityLog]
+  );
+
   const updateDoorCode = useCallback(
     async (marketId: string, newCode: string, userId: string, userName: string) => {
       const market = markets.find((m) => m.id === marketId);
@@ -312,6 +339,7 @@ export function useMarkets() {
     getMarketById,
     getMarketInfos,
     getPendingInfos,
+    addMarket,
     updateDoorCode,
     refresh,
   };
