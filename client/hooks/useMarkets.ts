@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Market, MarketInfo, ActivityLog } from "@/types";
+import { Market, MarketInfo, ActivityLog, CodeHistoryEntry } from "@/types";
 
 const MARKETS_KEY = "@markets";
 const MARKET_INFOS_KEY = "@market_infos";
@@ -250,6 +250,48 @@ export function useMarkets() {
     [marketInfos]
   );
 
+  const updateDoorCode = useCallback(
+    async (marketId: string, newCode: string, userId: string, userName: string) => {
+      const market = markets.find((m) => m.id === marketId);
+      if (!market) return;
+
+      const historyEntry: CodeHistoryEntry = {
+        value: market.doorCodes || "",
+        date: new Date().toLocaleDateString("de-DE"),
+        user: userName,
+      };
+
+      const updatedMarkets = markets.map((m) => {
+        if (m.id === marketId) {
+          return {
+            ...m,
+            doorCodes: newCode,
+            doorCodesHistory: market.doorCodes 
+              ? [historyEntry, ...(m.doorCodesHistory || [])]
+              : m.doorCodesHistory || [],
+            updatedAt: new Date().toISOString(),
+          };
+        }
+        return m;
+      });
+
+      setMarkets(updatedMarkets);
+      await AsyncStorage.setItem(MARKETS_KEY, JSON.stringify(updatedMarkets));
+
+      await addActivityLog({
+        action: "edit",
+        description: `Tuercode aktualisiert`,
+        marketId,
+        marketName: market.name,
+        userId,
+        userName,
+        previousValue: market.doorCodes ? "****" : undefined,
+        newValue: "****",
+      });
+    },
+    [markets, addActivityLog]
+  );
+
   const refresh = useCallback(() => {
     setIsLoading(true);
     loadData();
@@ -270,6 +312,7 @@ export function useMarkets() {
     getMarketById,
     getMarketInfos,
     getPendingInfos,
+    updateDoorCode,
     refresh,
   };
 }

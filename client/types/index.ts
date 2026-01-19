@@ -9,6 +9,12 @@ export interface User {
   createdAt: string;
 }
 
+export interface CodeHistoryEntry {
+  value: string;
+  date: string;
+  user: string;
+}
+
 export interface Market {
   id: string;
   wawiNumber: string;
@@ -18,6 +24,7 @@ export interface Market {
   contactPerson?: string;
   parkingInfo?: string;
   doorCodes?: string;
+  doorCodesHistory?: CodeHistoryEntry[];
   egateAccess?: string;
   egateBarcode?: string;
   barcodeInfo?: string;

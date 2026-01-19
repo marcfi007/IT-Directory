@@ -1,17 +1,17 @@
-import React, { useMemo } from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
+import React, { useMemo, useState } from "react";
+import { View, StyleSheet, ScrollView, Modal, TextInput, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import SvgQRCode from "react-native-qrcode-svg";
 import { ThemedText } from "@/components/ThemedText";
-import { RoleBadge } from "@/components/RoleBadge";
 import { InfoSection } from "@/components/InfoSection";
 import { InfoRow } from "@/components/InfoRow";
 import { FAB } from "@/components/FAB";
-import { Card } from "@/components/Card";
+import { Button } from "@/components/Button";
 import { useTheme } from "@/hooks/useTheme";
 import { useMarketContext } from "@/contexts/MarketContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,7 +28,10 @@ export default function MarketDetailScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { theme } = useTheme();
   const { user } = useAuth();
-  const { getMarketById, getMarketInfos } = useMarketContext();
+  const { getMarketById, getMarketInfos, updateDoorCode } = useMarketContext();
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [newDoorCode, setNewDoorCode] = useState("");
 
   const market = getMarketById(route.params.marketId);
   const marketInfos = useMemo(
@@ -43,6 +46,20 @@ export default function MarketDetailScreen() {
     navigation.navigate("AddInfo", { marketId: route.params.marketId });
   };
 
+  const handleEditDoorCode = () => {
+    setNewDoorCode(market?.doorCodes?.replace("encrypted:", "") || "");
+    setShowEditModal(true);
+  };
+
+  const handleSaveDoorCode = async () => {
+    if (!user || !market || !newDoorCode.trim()) return;
+    
+    await updateDoorCode(market.id, `encrypted:${newDoorCode.trim()}`, user.id, user.name);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setShowEditModal(false);
+    setNewDoorCode("");
+  };
+
   if (!market) {
     return (
       <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
@@ -50,6 +67,8 @@ export default function MarketDetailScreen() {
       </View>
     );
   }
+
+  const doorCodeValue = market.doorCodes?.replace("encrypted:", "") || "";
 
   return (
     <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
@@ -93,8 +112,35 @@ export default function MarketDetailScreen() {
             <InfoRow label="Parkplatz-Info" value={market.parkingInfo} copyable />
           ) : null}
           {market.doorCodes ? (
-            <InfoRow label="Tuercodes" value={market.doorCodes} isEncrypted />
-          ) : null}
+            <InfoRow 
+              label="Tuercodes" 
+              value={doorCodeValue} 
+              isEncrypted 
+              copyable
+              editable
+              onEdit={handleEditDoorCode}
+              history={market.doorCodesHistory?.map(h => ({
+                value: h.value.replace("encrypted:", ""),
+                date: h.date,
+                user: h.user,
+              })) || []}
+            />
+          ) : (
+            <View style={styles.addCodeContainer}>
+              <ThemedText style={[styles.noData, { color: theme.textSecondary }]}>
+                Kein Tuercode hinterlegt
+              </ThemedText>
+              <Pressable 
+                onPress={handleEditDoorCode}
+                style={[styles.addCodeButton, { backgroundColor: theme.primary + "15" }]}
+              >
+                <Feather name="plus" size={14} color={theme.primary} />
+                <ThemedText style={[styles.addCodeText, { color: theme.primary }]}>
+                  Code hinzufuegen
+                </ThemedText>
+              </Pressable>
+            </View>
+          )}
           {market.egateAccess ? (
             <InfoRow label="eGate-Zugang" value={market.egateAccess} copyable />
           ) : null}
@@ -211,6 +257,67 @@ export default function MarketDetailScreen() {
       </ScrollView>
 
       <FAB icon="plus" onPress={handleAddInfo} bottom={insets.bottom + Spacing.lg} />
+
+      <Modal
+        visible={showEditModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowEditModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: theme.cardBackground }]}>
+            <View style={styles.modalHeader}>
+              <ThemedText type="h3">Tuercode bearbeiten</ThemedText>
+              <Pressable onPress={() => setShowEditModal(false)} style={styles.modalClose}>
+                <Feather name="x" size={24} color={theme.text} />
+              </Pressable>
+            </View>
+
+            <View style={[styles.infoBox, { backgroundColor: theme.warning + "15" }]}>
+              <Feather name="alert-triangle" size={16} color={theme.warning} />
+              <ThemedText style={[styles.infoBoxText, { color: theme.warning }]}>
+                Der alte Code wird im Verlauf gespeichert (sichtbar in Rot).
+              </ThemedText>
+            </View>
+
+            <ThemedText style={[styles.inputLabel, { color: theme.textSecondary }]}>
+              Neuer Tuercode
+            </ThemedText>
+            <TextInput
+              style={[
+                styles.modalInput,
+                { 
+                  backgroundColor: theme.backgroundSecondary, 
+                  color: theme.text,
+                  borderColor: theme.border,
+                },
+              ]}
+              value={newDoorCode}
+              onChangeText={setNewDoorCode}
+              placeholder="z.B. 4521"
+              placeholderTextColor={theme.textSecondary}
+              keyboardType="default"
+              autoFocus
+            />
+
+            <View style={styles.modalButtons}>
+              <Pressable 
+                onPress={() => setShowEditModal(false)}
+                style={[styles.cancelButton, { borderColor: theme.border }]}
+              >
+                <ThemedText style={{ color: theme.text }}>Abbrechen</ThemedText>
+              </Pressable>
+              <Button 
+                onPress={handleSaveDoorCode} 
+                style={styles.saveButton}
+                disabled={!newDoorCode.trim()}
+              >
+                Speichern
+              </Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -265,6 +372,24 @@ const styles = StyleSheet.create({
   noData: {
     fontStyle: "italic",
     fontSize: 14,
+  },
+  addCodeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: Spacing.md,
+  },
+  addCodeButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.sm,
+  },
+  addCodeText: {
+    fontSize: 13,
+    fontWeight: "500",
+    marginLeft: 4,
   },
   barcodeContainer: {
     alignItems: "center",
@@ -339,5 +464,70 @@ const styles = StyleSheet.create({
   metaValue: {
     fontSize: 13,
     fontWeight: "500",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: Spacing.lg,
+  },
+  modalContent: {
+    width: "100%",
+    maxWidth: 400,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing["2xl"],
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: Spacing.lg,
+  },
+  modalClose: {
+    padding: Spacing.xs,
+  },
+  infoBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    marginBottom: Spacing.lg,
+  },
+  infoBoxText: {
+    flex: 1,
+    fontSize: 13,
+    marginLeft: Spacing.sm,
+    lineHeight: 18,
+  },
+  inputLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: Spacing.sm,
+  },
+  modalInput: {
+    height: 48,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    paddingHorizontal: Spacing.md,
+    fontSize: 16,
+    marginBottom: Spacing.lg,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    gap: Spacing.md,
+  },
+  cancelButton: {
+    flex: 1,
+    height: 48,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  saveButton: {
+    flex: 1,
   },
 });
