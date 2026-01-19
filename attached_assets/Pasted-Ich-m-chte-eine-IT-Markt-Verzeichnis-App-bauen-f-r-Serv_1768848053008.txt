@@ -1,0 +1,142 @@
+Ich möchte eine IT-Markt-Verzeichnis-App bauen für Servicetechniker.
+	•	Backend läuft auf meinem VPS
+	•	Android App als Client
+	•	Zentrales Marktverzeichnis mit sensiblen IT-Informationen
+	•	Rollenbasiertes Login
+	•	Alles revisionssicher protokolliert
+	•	2-Faktor-Authentifizierung
+
+⸻
+
+🧱 Architektur-Vorgaben
+
+Backend
+	•	REST API (bevorzugt FastAPI oder Node.js (NestJS))
+	•	PostgreSQL oder MariaDB
+	•	JWT-basierte Authentifizierung
+	•	VPS-tauglich (Docker-fähig)
+	•	HTTPS-ready
+	•	Saubere Rollen- und Rechteverwaltung
+
+Android App
+	•	Android (Kotlin oder Flutter)
+	•	Login-Maske
+	•	Rollenabhängige UI
+	•	Offline-Read-Modus (Cache)
+	•	Suche & Filter
+
+⸻
+
+👥 Benutzerrollen
+
+1️⃣ Admin
+	•	Benutzer anlegen / sperren / löschen
+	•	Märkte bearbeiten & löschen
+	•	Einträge freigeben
+	•	Audit-Logs einsehen
+	•	2FA erzwingen
+
+2️⃣ Entwickler
+	•	Wie User, zusätzlich:
+	•	API-Keys verwalten
+	•	Debug-Logs einsehen (read-only)
+
+3️⃣ User (IT-Techniker)
+	•	Märkte ansehen
+	•	Neue Infos hinzufügen
+	•	Kommentare & Ergänzungen posten
+	•	KEIN Löschen / Bearbeiten bestehender Daten
+
+⸻
+
+🏪 Markt-Verzeichnis (Pflichtfelder)
+
+Jeder Markt enthält:
+	•	WAWI-Marktnummer (Primärschlüssel)
+	•	Marktname
+	•	Adresse
+	•	Ansprechpartner (optional)
+	•	📍 Parkplatz-Info (z. B. „Hinterhof“, „TG links“)
+	•	🚪 Türcodes (verschlüsselt speichern!)
+	•	🔐 eGate-Zugang (Text + Barcode/QR)
+	•	🧾 Barcode-Infos (Scanner, Exit-Gate, SCO)
+	•	🖥️ IT-Infos:
+	•	Server-Standort
+	•	Switch / Router Standort
+	•	Besonderheiten (z. B. VLAN, RedHat, Windows)
+	•	Freitext-Notizen
+	•	Anhänge (Fotos, PDFs)
+
+⸻
+
+✏️ Rechte-Logik
+	•	✅ Jeder User darf Infos hinzufügen
+	•	❌ Nur Admin darf:
+	•	löschen
+	•	bestehende Einträge ändern
+	•	Ergänzungen werden als Versionen / Kommentare gespeichert
+	•	Admin kann Änderungen übernehmen oder ablehnen
+
+⸻
+
+🔐 Sicherheit
+
+Pflicht:
+	•	Passwort-Hashing (bcrypt / argon2)
+	•	2FA (TOTP – Google Authenticator kompatibel)
+	•	Rollenbasierte API-Guards
+	•	Sensible Felder verschlüsselt in DB
+	•	Rate-Limit für Login
+	•	IP-Logging
+
+⸻
+
+📜 Protokollierung (sehr wichtig)
+
+Alles wird geloggt:
+	•	Login / Logout
+	•	Fehlversuche
+	•	Wer hat welche Info hinzugefügt
+	•	Wer hat gelöscht / bearbeitet
+	•	Vorher- / Nachher-Werte
+	•	Zeitstempel
+	•	User-ID
+	•	IP-Adresse
+
+Logs dürfen nicht editierbar sein.
+
+⸻
+
+📱 Android-App Features
+	•	Login mit 2FA
+	•	Markt-Suche nach:
+	•	WAWI-Nummer
+	•	Adresse
+	•	Stadt
+	•	Detailansicht Markt
+	•	„Info hinzufügen“-Maske
+	•	Admin-Modus (nur sichtbar für Admins)
+	•	QR- & Barcode-Scanner
+	•	Offline-Cache (read-only)
+
+⸻
+
+📦 Lieferumfang
+
+Bitte liefere:
+	1.	📂 Backend-Projektstruktur
+	2.	🗄️ Datenbank-Schema
+	3.	🔑 Auth- & 2FA-Flow
+	4.	📡 API-Endpoints (REST)
+	5.	📱 Android-App Struktur
+	6.	🧪 Beispiel-Requests
+	7.	🐳 Docker-Setup
+	8.	🔒 Security-Best-Practices
+
+⸻
+
+❗ Wichtig
+	•	Schreibe produktionsreifen Code
+	•	Keine Platzhalter-Antworten
+	•	Alles klar kommentiert
+	•	Deutsch für Kommentare & UI
