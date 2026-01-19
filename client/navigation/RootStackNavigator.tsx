@@ -1,34 +1,66 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import MainTabNavigator from "@/navigation/MainTabNavigator";
-import ModalScreen from "@/screens/ModalScreen";
+import LoginScreen from "@/screens/LoginScreen";
+import MarketDetailScreen from "@/screens/MarketDetailScreen";
+import AddInfoScreen from "@/screens/AddInfoScreen";
+import AdminPanelScreen from "@/screens/AdminPanelScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
+import { useAuth } from "@/contexts/AuthContext";
 
 export type RootStackParamList = {
+  Login: undefined;
   Main: undefined;
-  Modal: undefined;
+  MarketDetail: { marketId: string };
+  AddInfo: { marketId: string | undefined };
+  AdminPanel: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootStackNavigator() {
   const screenOptions = useScreenOptions();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return null;
+  }
 
   return (
     <Stack.Navigator screenOptions={screenOptions}>
-      <Stack.Screen
-        name="Main"
-        component={MainTabNavigator}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="Modal"
-        component={ModalScreen}
-        options={{
-          presentation: "modal",
-          headerTitle: "Modal",
-        }}
-      />
+      {isAuthenticated ? (
+        <>
+          <Stack.Screen
+            name="Main"
+            component={MainTabNavigator}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="MarketDetail"
+            component={MarketDetailScreen}
+            options={{ headerTitle: "Markt Details" }}
+          />
+          <Stack.Screen
+            name="AddInfo"
+            component={AddInfoScreen}
+            options={{
+              presentation: "modal",
+              headerTitle: "Info hinzufuegen",
+            }}
+          />
+          <Stack.Screen
+            name="AdminPanel"
+            component={AdminPanelScreen}
+            options={{ headerTitle: "Admin-Bereich" }}
+          />
+        </>
+      ) : (
+        <Stack.Screen
+          name="Login"
+          component={LoginScreen}
+          options={{ headerShown: false }}
+        />
+      )}
     </Stack.Navigator>
   );
 }
