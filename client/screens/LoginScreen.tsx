@@ -95,7 +95,7 @@ export default function LoginScreen() {
             IT-Markt Verzeichnis
           </ThemedText>
           <ThemedText style={[styles.subtitle, { color: theme.textSecondary }]}>
-            Fuer Servicetechniker
+            REWE Group - Servicetechniker
           </ThemedText>
         </View>
 
@@ -189,9 +189,9 @@ export default function LoginScreen() {
                 Demo-Zugaenge:
               </ThemedText>
               <ThemedText style={[styles.demoHintText, { color: theme.textSecondary }]}>
-                admin@itmarkt.de / admin123{"\n"}
-                dev@itmarkt.de / dev123{"\n"}
-                tech@itmarkt.de / tech123
+                admin@rewe-group.de / admin123{"\n"}
+                dev@rewe-group.de / dev123{"\n"}
+                tech@rewe-group.de / tech123
               </ThemedText>
             </View>
           </View>
