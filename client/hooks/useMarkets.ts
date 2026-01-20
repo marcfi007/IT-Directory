@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Market, MarketInfo, ActivityLog, CodeHistoryEntry } from "@/types";
+import { Market, MarketInfo, ActivityLog, CodeHistoryEntry, FieldHistory } from "@/types";
 
 const MARKETS_KEY = "@markets";
 const MARKET_INFOS_KEY = "@market_infos";
@@ -9,35 +9,35 @@ const ACTIVITY_LOGS_KEY = "@activity_logs";
 const DEMO_MARKETS: Market[] = [
   {
     id: "1",
-    wawiNumber: "1001",
-    name: "MediaMarkt Berlin Alexanderplatz",
-    address: "Alexanderplatz 1",
+    wawiNumber: "2001",
+    name: "REWE Center Berlin Mitte",
+    address: "Alexanderplatz 5",
     city: "Berlin",
     contactPerson: "Herr Mueller",
-    parkingInfo: "Tiefgarage Einfahrt links, P3",
+    parkingInfo: "Tiefgarage Einfahrt links, P2",
     doorCodes: "encrypted:4521",
-    egateAccess: "Badge + PIN",
-    egateBarcode: "MM1001ALEX",
-    barcodeInfo: "Scanner Typ A, Exit-Gate rechts",
+    egateAccess: "Mitarbeiter-Badge + PIN",
+    egateBarcode: "REWE2001ALEX",
+    barcodeInfo: "Scanner Typ A, Wareneingang hinten",
     serverLocation: "Serverraum UG, Rack 3",
     switchRouterLocation: "Hauptverteiler EG, Schrank B",
     specialNotes: "VLAN 10 fuer Kassen, VLAN 20 fuer Office",
-    freeTextNotes: "24/7 Zugang moeglich mit Voranmeldung",
+    freeTextNotes: "24/7 Zugang moeglich mit Voranmeldung beim Marktleiter",
     createdAt: "2024-01-15T10:30:00Z",
     updatedAt: "2024-01-20T14:45:00Z",
     createdBy: "1",
   },
   {
     id: "2",
-    wawiNumber: "1002",
-    name: "Saturn Hamburg Moenckebergstrasse",
-    address: "Moenckebergstrasse 1",
+    wawiNumber: "2002",
+    name: "REWE Hamburg Eimsbuettel",
+    address: "Osterstrasse 120",
     city: "Hamburg",
     contactPerson: "Frau Schmidt",
     parkingInfo: "Hinterhof Zufahrt, Code: siehe Tuercodes",
     doorCodes: "encrypted:7832",
     egateAccess: "Mitarbeitereingang Seite",
-    egateBarcode: "SAT1002MBERG",
+    egateBarcode: "REWE2002EIMS",
     barcodeInfo: "SCO Scanner Typ B",
     serverLocation: "IT-Raum 2. OG",
     switchRouterLocation: "Netzwerkschrank jede Etage",
@@ -49,15 +49,15 @@ const DEMO_MARKETS: Market[] = [
   },
   {
     id: "3",
-    wawiNumber: "1003",
-    name: "MediaMarkt Muenchen Stachus",
-    address: "Karlsplatz 25",
+    wawiNumber: "2003",
+    name: "PENNY Muenchen Schwabing",
+    address: "Leopoldstrasse 80",
     city: "Muenchen",
     contactPerson: "Herr Weber",
-    parkingInfo: "Oeffentliche TG nebenan",
+    parkingInfo: "Kundenparkplaetze vor dem Markt",
     doorCodes: "encrypted:1234",
     egateAccess: "Personaleingang hinten",
-    egateBarcode: "MM1003STACH",
+    egateBarcode: "PENNY2003SCHW",
     barcodeInfo: "Alle Scanner Typ C",
     serverLocation: "Keller Raum 005",
     switchRouterLocation: "Zentral im Keller",
@@ -69,11 +69,11 @@ const DEMO_MARKETS: Market[] = [
   },
   {
     id: "4",
-    wawiNumber: "1004",
-    name: "Saturn Koeln Hohe Strasse",
-    address: "Hohe Strasse 100",
+    wawiNumber: "2004",
+    name: "REWE Koeln Ehrenfeld",
+    address: "Venloer Strasse 200",
     city: "Koeln",
-    parkingInfo: "Keine eigenen Parkplaetze",
+    parkingInfo: "Parkplaetze im Hinterhof",
     serverLocation: "Dachgeschoss Technikraum",
     createdAt: "2024-01-08T08:00:00Z",
     updatedAt: "2024-01-08T08:00:00Z",
@@ -81,19 +81,36 @@ const DEMO_MARKETS: Market[] = [
   },
   {
     id: "5",
-    wawiNumber: "1005",
-    name: "MediaMarkt Frankfurt Zeil",
-    address: "Zeil 112-114",
+    wawiNumber: "2005",
+    name: "toom Baumarkt Frankfurt",
+    address: "Hanauer Landstrasse 150",
     city: "Frankfurt",
     contactPerson: "Herr Becker",
-    parkingInfo: "Parkhaus Zeilgalerie",
+    parkingInfo: "Grosser Kundenparkplatz",
     doorCodes: "encrypted:9999",
     egateAccess: "Haupteingang mit Badge",
-    serverLocation: "UG Technikzentrale",
+    serverLocation: "Buero 1. OG",
     switchRouterLocation: "Pro Etage ein Verteiler",
     specialNotes: "Citrix Umgebung",
     createdAt: "2024-01-05T12:00:00Z",
     updatedAt: "2024-01-19T16:30:00Z",
+    createdBy: "1",
+  },
+  {
+    id: "6",
+    wawiNumber: "2006",
+    name: "REWE City Duesseldorf",
+    address: "Koenigsallee 45",
+    city: "Duesseldorf",
+    contactPerson: "Frau Klein",
+    parkingInfo: "Keine eigenen Parkplaetze, Tiefgarage nebenan",
+    doorCodes: "encrypted:5566",
+    egateAccess: "Keycard System",
+    egateBarcode: "REWE2006KOE",
+    serverLocation: "Lagerraum hinten",
+    specialNotes: "Kleiner Markt, kompakte IT",
+    createdAt: "2024-01-03T08:00:00Z",
+    updatedAt: "2024-01-03T08:00:00Z",
     createdBy: "1",
   },
 ];
@@ -277,25 +294,34 @@ export function useMarkets() {
     [markets, addActivityLog]
   );
 
-  const updateDoorCode = useCallback(
-    async (marketId: string, newCode: string, userId: string, userName: string) => {
+  const updateMarketField = useCallback(
+    async (
+      marketId: string, 
+      fieldName: keyof Market, 
+      newValue: string, 
+      userId: string, 
+      userName: string,
+      fieldLabel: string
+    ) => {
       const market = markets.find((m) => m.id === marketId);
       if (!market) return;
 
-      const historyEntry: CodeHistoryEntry = {
-        value: market.doorCodes || "",
+      const oldValue = market[fieldName] as string | undefined;
+      const historyKey = `${fieldName}History` as keyof Market;
+      
+      const historyEntry: FieldHistory = {
+        value: oldValue || "",
         date: new Date().toLocaleDateString("de-DE"),
         user: userName,
       };
 
       const updatedMarkets = markets.map((m) => {
         if (m.id === marketId) {
+          const existingHistory = (m[historyKey] as FieldHistory[] | undefined) || [];
           return {
             ...m,
-            doorCodes: newCode,
-            doorCodesHistory: market.doorCodes 
-              ? [historyEntry, ...(m.doorCodesHistory || [])]
-              : m.doorCodesHistory || [],
+            [fieldName]: newValue,
+            [historyKey]: oldValue ? [historyEntry, ...existingHistory] : existingHistory,
             updatedAt: new Date().toISOString(),
           };
         }
@@ -305,18 +331,26 @@ export function useMarkets() {
       setMarkets(updatedMarkets);
       await AsyncStorage.setItem(MARKETS_KEY, JSON.stringify(updatedMarkets));
 
+      const isSecure = fieldName === "doorCodes";
       await addActivityLog({
         action: "edit",
-        description: `Tuercode aktualisiert`,
+        description: `${fieldLabel} aktualisiert`,
         marketId,
         marketName: market.name,
         userId,
         userName,
-        previousValue: market.doorCodes ? "****" : undefined,
-        newValue: "****",
+        previousValue: isSecure ? "****" : oldValue,
+        newValue: isSecure ? "****" : newValue,
       });
     },
     [markets, addActivityLog]
+  );
+
+  const updateDoorCode = useCallback(
+    async (marketId: string, newCode: string, userId: string, userName: string) => {
+      await updateMarketField(marketId, "doorCodes", newCode, userId, userName, "Tuercode");
+    },
+    [updateMarketField]
   );
 
   const refresh = useCallback(() => {
@@ -340,6 +374,7 @@ export function useMarkets() {
     getMarketInfos,
     getPendingInfos,
     addMarket,
+    updateMarketField,
     updateDoorCode,
     refresh,
   };

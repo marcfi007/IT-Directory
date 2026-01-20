@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from "react";
-import { View, StyleSheet, ScrollView, Pressable, FlatList } from "react-native";
+import React, { useState, useCallback, useEffect } from "react";
+import { View, StyleSheet, Pressable, FlatList, Modal, TextInput, Switch } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { Feather } from "@expo/vector-icons";
@@ -10,11 +10,13 @@ import { RoleBadge } from "@/components/RoleBadge";
 import { ActivityItem } from "@/components/ActivityItem";
 import { EmptyState } from "@/components/EmptyState";
 import { Button } from "@/components/Button";
+import { Input } from "@/components/Input";
+import { FAB } from "@/components/FAB";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMarketContext } from "@/contexts/MarketContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
-import { MarketInfo, ActivityLog } from "@/types";
+import { MarketInfo, ActivityLog, StoredUser, UserRole } from "@/types";
 
 type TabType = "pending" | "users" | "logs";
 
@@ -24,27 +26,46 @@ const TABS: { key: TabType; label: string; icon: keyof typeof Feather.glyphMap }
   { key: "logs", label: "Audit-Logs", icon: "file-text" },
 ];
 
-const DEMO_USERS = [
-  { id: "1", name: "Max Admin", email: "admin@itmarkt.de", role: "admin" as const, status: "active" },
-  { id: "2", name: "Anna Entwickler", email: "dev@itmarkt.de", role: "developer" as const, status: "active" },
-  { id: "3", name: "Thomas Techniker", email: "tech@itmarkt.de", role: "user" as const, status: "active" },
+const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
+  { value: "admin", label: "Administrator" },
+  { value: "developer", label: "Entwickler" },
+  { value: "user", label: "Techniker" },
 ];
 
 export default function AdminPanelScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const { theme } = useTheme();
-  const { user } = useAuth();
+  const { user, getUsers, addUser, toggleUserActive } = useAuth();
   const {
     getPendingInfos,
     activityLogs,
     approveMarketInfo,
     rejectMarketInfo,
     getMarketById,
+    addActivityLog,
   } = useMarketContext();
 
   const [activeTab, setActiveTab] = useState<TabType>("pending");
+  const [users, setUsers] = useState<StoredUser[]>([]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newUserName, setNewUserName] = useState("");
+  const [newUserEmail, setNewUserEmail] = useState("");
+  const [newUserPassword, setNewUserPassword] = useState("");
+  const [newUserRole, setNewUserRole] = useState<UserRole>("user");
+  const [newUser2FA, setNewUser2FA] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
   const pendingInfos = getPendingInfos();
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const loadUsers = async () => {
+    const loadedUsers = await getUsers();
+    setUsers(loadedUsers);
+  };
 
   const handleApprove = async (info: MarketInfo) => {
     if (!user) return;
@@ -56,6 +77,53 @@ export default function AdminPanelScreen() {
     if (!user) return;
     await rejectMarketInfo(info.id, user.id, user.name);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+  };
+
+  const handleToggleUserActive = async (userId: string) => {
+    await toggleUserActive(userId);
+    await loadUsers();
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  };
+
+  const handleAddUser = async () => {
+    if (!newUserName.trim() || !newUserEmail.trim() || !newUserPassword.trim()) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await addUser({
+        name: newUserName.trim(),
+        email: newUserEmail.trim().toLowerCase(),
+        password: newUserPassword,
+        role: newUserRole,
+        twoFactorEnabled: newUser2FA || newUserRole === "admin" || newUserRole === "developer",
+        createdBy: user?.id,
+      });
+
+      if (user) {
+        await addActivityLog({
+          action: "add",
+          description: `Neuer Mitarbeiter angelegt: ${newUserName.trim()}`,
+          userId: user.id,
+          userName: user.name,
+        });
+      }
+
+      await loadUsers();
+      setShowAddModal(false);
+      setNewUserName("");
+      setNewUserEmail("");
+      setNewUserPassword("");
+      setNewUserRole("user");
+      setNewUser2FA(false);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (error) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const renderPendingItem = useCallback(
@@ -114,28 +182,66 @@ export default function AdminPanelScreen() {
   );
 
   const renderUserItem = useCallback(
-    ({ item, index }: { item: typeof DEMO_USERS[0]; index: number }) => (
+    ({ item, index }: { item: StoredUser; index: number }) => (
       <Animated.View
         entering={FadeInDown.delay(index * 50).duration(250)}
-        style={[styles.userCard, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
+        style={[
+          styles.userCard, 
+          { 
+            backgroundColor: theme.cardBackground, 
+            borderColor: theme.border,
+            opacity: item.isActive ? 1 : 0.5,
+          }
+        ]}
       >
-        <View style={[styles.userAvatar, { backgroundColor: theme.primary }]}>
+        <View style={[styles.userAvatar, { backgroundColor: item.isActive ? theme.primary : theme.textSecondary }]}>
           <ThemedText style={styles.userAvatarText}>
             {item.name.split(" ").map((n) => n[0]).join("")}
           </ThemedText>
         </View>
         <View style={styles.userInfo}>
-          <ThemedText type="h4" style={styles.userName}>
-            {item.name}
-          </ThemedText>
+          <View style={styles.userNameRow}>
+            <ThemedText type="h4" style={styles.userName}>
+              {item.name}
+            </ThemedText>
+            {!item.isActive ? (
+              <View style={[styles.inactiveBadge, { backgroundColor: theme.error + "20" }]}>
+                <ThemedText style={[styles.inactiveText, { color: theme.error }]}>
+                  Inaktiv
+                </ThemedText>
+              </View>
+            ) : null}
+          </View>
           <ThemedText style={[styles.userEmail, { color: theme.textSecondary }]}>
             {item.email}
           </ThemedText>
+          {item.twoFactorEnabled ? (
+            <View style={styles.twoFaRow}>
+              <Feather name="shield" size={12} color={theme.verified} />
+              <ThemedText style={[styles.twoFaText, { color: theme.verified }]}>
+                2FA aktiv
+              </ThemedText>
+            </View>
+          ) : null}
         </View>
-        <RoleBadge role={item.role} size="small" />
+        <View style={styles.userActions}>
+          <RoleBadge role={item.role} size="small" />
+          {user?.role === "admin" && item.id !== user.id ? (
+            <Pressable
+              onPress={() => handleToggleUserActive(item.id)}
+              style={[styles.toggleButton, { borderColor: theme.border }]}
+            >
+              <Feather 
+                name={item.isActive ? "user-x" : "user-check"} 
+                size={16} 
+                color={item.isActive ? theme.error : theme.verified} 
+              />
+            </Pressable>
+          ) : null}
+        </View>
       </Animated.View>
     ),
-    [theme]
+    [theme, user, handleToggleUserActive]
   );
 
   const renderLogItem = useCallback(
@@ -167,18 +273,25 @@ export default function AdminPanelScreen() {
         );
       case "users":
         return (
-          <FlatList
-            data={DEMO_USERS}
-            keyExtractor={(item) => item.id}
-            renderItem={renderUserItem}
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-          />
+          <View style={styles.flex1}>
+            <FlatList
+              data={users}
+              keyExtractor={(item) => item.id}
+              renderItem={renderUserItem}
+              contentContainerStyle={[styles.listContent, { paddingBottom: 100 }]}
+              showsVerticalScrollIndicator={false}
+            />
+            <FAB 
+              icon="user-plus" 
+              onPress={() => setShowAddModal(true)} 
+              bottom={insets.bottom + Spacing.lg}
+            />
+          </View>
         );
       case "logs":
         return activityLogs.length > 0 ? (
           <FlatList
-            data={activityLogs.slice(0, 50)}
+            data={activityLogs.slice(0, 100)}
             keyExtractor={(item) => item.id}
             renderItem={renderLogItem}
             contentContainerStyle={styles.listContent}
@@ -247,12 +360,123 @@ export default function AdminPanelScreen() {
       </View>
 
       <View style={styles.contentContainer}>{renderContent()}</View>
+
+      <Modal
+        visible={showAddModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowAddModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: theme.cardBackground }]}>
+            <View style={styles.modalHeader}>
+              <ThemedText type="h3">Neuen Mitarbeiter anlegen</ThemedText>
+              <Pressable onPress={() => setShowAddModal(false)} style={styles.modalClose}>
+                <Feather name="x" size={24} color={theme.text} />
+              </Pressable>
+            </View>
+
+            <Input
+              label="Name"
+              placeholder="Vor- und Nachname"
+              value={newUserName}
+              onChangeText={setNewUserName}
+              leftIcon="user"
+            />
+
+            <Input
+              label="E-Mail"
+              placeholder="email@rewe-group.de"
+              value={newUserEmail}
+              onChangeText={setNewUserEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              leftIcon="mail"
+            />
+
+            <Input
+              label="Passwort"
+              placeholder="Passwort"
+              value={newUserPassword}
+              onChangeText={setNewUserPassword}
+              secureTextEntry
+              leftIcon="lock"
+            />
+
+            <ThemedText style={[styles.inputLabel, { color: theme.textSecondary }]}>
+              Rolle
+            </ThemedText>
+            <View style={styles.roleOptions}>
+              {ROLE_OPTIONS.map((option) => (
+                <Pressable
+                  key={option.value}
+                  onPress={() => setNewUserRole(option.value)}
+                  style={[
+                    styles.roleOption,
+                    {
+                      backgroundColor: newUserRole === option.value ? theme.primary : "transparent",
+                      borderColor: newUserRole === option.value ? theme.primary : theme.border,
+                    },
+                  ]}
+                >
+                  <ThemedText
+                    style={[
+                      styles.roleOptionText,
+                      { color: newUserRole === option.value ? "#FFFFFF" : theme.text },
+                    ]}
+                  >
+                    {option.label}
+                  </ThemedText>
+                </Pressable>
+              ))}
+            </View>
+
+            {newUserRole === "user" ? (
+              <View style={styles.switchRow}>
+                <ThemedText style={styles.switchLabel}>2-Faktor-Authentifizierung</ThemedText>
+                <Switch
+                  value={newUser2FA}
+                  onValueChange={setNewUser2FA}
+                  trackColor={{ false: theme.border, true: theme.primary + "60" }}
+                  thumbColor={newUser2FA ? theme.primary : theme.textSecondary}
+                />
+              </View>
+            ) : (
+              <View style={[styles.infoBox, { backgroundColor: theme.primary + "15" }]}>
+                <Feather name="shield" size={16} color={theme.primary} />
+                <ThemedText style={[styles.infoBoxText, { color: theme.primary }]}>
+                  2FA ist fuer Admins und Entwickler erforderlich
+                </ThemedText>
+              </View>
+            )}
+
+            <View style={styles.modalButtons}>
+              <Pressable 
+                onPress={() => setShowAddModal(false)}
+                style={[styles.cancelButton, { borderColor: theme.border }]}
+              >
+                <ThemedText style={{ color: theme.text }}>Abbrechen</ThemedText>
+              </Pressable>
+              <Button 
+                onPress={handleAddUser} 
+                style={styles.saveButton}
+                disabled={isLoading || !newUserName.trim() || !newUserEmail.trim() || !newUserPassword.trim()}
+              >
+                Anlegen
+              </Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  flex1: {
     flex: 1,
   },
   tabBar: {
@@ -377,10 +601,129 @@ const styles = StyleSheet.create({
   userInfo: {
     flex: 1,
   },
+  userNameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+  },
   userName: {
     marginBottom: 2,
   },
   userEmail: {
     fontSize: 13,
+  },
+  twoFaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+  },
+  twoFaText: {
+    fontSize: 11,
+    marginLeft: 4,
+  },
+  userActions: {
+    alignItems: "flex-end",
+    gap: Spacing.sm,
+  },
+  toggleButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  inactiveBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  inactiveText: {
+    fontSize: 10,
+    fontWeight: "600",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: Spacing.lg,
+  },
+  modalContent: {
+    width: "100%",
+    maxWidth: 400,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing["2xl"],
+    maxHeight: "90%",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: Spacing.lg,
+  },
+  modalClose: {
+    padding: Spacing.xs,
+  },
+  inputLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: Spacing.sm,
+    marginTop: Spacing.sm,
+  },
+  roleOptions: {
+    flexDirection: "row",
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
+  },
+  roleOption: {
+    flex: 1,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    alignItems: "center",
+  },
+  roleOptionText: {
+    fontSize: 13,
+    fontWeight: "500",
+  },
+  switchRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: Spacing.lg,
+  },
+  switchLabel: {
+    fontSize: 14,
+  },
+  infoBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    marginBottom: Spacing.lg,
+  },
+  infoBoxText: {
+    flex: 1,
+    fontSize: 13,
+    marginLeft: Spacing.sm,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    gap: Spacing.md,
+  },
+  cancelButton: {
+    flex: 1,
+    height: 48,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  saveButton: {
+    flex: 1,
   },
 });

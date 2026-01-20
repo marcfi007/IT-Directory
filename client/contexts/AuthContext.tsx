@@ -1,51 +1,53 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { User, UserRole, AuthState } from "@/types";
+import { User, UserRole, AuthState, StoredUser } from "@/types";
+
+const USERS_KEY = "@stored_users";
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<boolean>;
   verify2FA: (code: string) => Promise<boolean>;
   logout: () => Promise<void>;
   switchRole: (role: UserRole) => void;
+  addUser: (userData: Omit<StoredUser, "id" | "createdAt" | "isActive">) => Promise<StoredUser>;
+  getUsers: () => Promise<StoredUser[]>;
+  toggleUserActive: (userId: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const DEMO_USERS: Record<string, { password: string; user: User }> = {
-  "admin@itmarkt.de": {
+const DEFAULT_USERS: StoredUser[] = [
+  {
+    id: "1",
+    email: "admin@rewe-group.de",
     password: "admin123",
-    user: {
-      id: "1",
-      email: "admin@itmarkt.de",
-      name: "Max Admin",
-      role: "admin",
-      twoFactorEnabled: true,
-      createdAt: new Date().toISOString(),
-    },
+    name: "Max Admin",
+    role: "admin",
+    twoFactorEnabled: true,
+    createdAt: new Date().toISOString(),
+    isActive: true,
   },
-  "dev@itmarkt.de": {
+  {
+    id: "2",
+    email: "dev@rewe-group.de",
     password: "dev123",
-    user: {
-      id: "2",
-      email: "dev@itmarkt.de",
-      name: "Anna Entwickler",
-      role: "developer",
-      twoFactorEnabled: true,
-      createdAt: new Date().toISOString(),
-    },
+    name: "Anna Entwickler",
+    role: "developer",
+    twoFactorEnabled: true,
+    createdAt: new Date().toISOString(),
+    isActive: true,
   },
-  "tech@itmarkt.de": {
+  {
+    id: "3",
+    email: "tech@rewe-group.de",
     password: "tech123",
-    user: {
-      id: "3",
-      email: "tech@itmarkt.de",
-      name: "Thomas Techniker",
-      role: "user",
-      twoFactorEnabled: false,
-      createdAt: new Date().toISOString(),
-    },
+    name: "Thomas Techniker",
+    role: "user",
+    twoFactorEnabled: false,
+    createdAt: new Date().toISOString(),
+    isActive: true,
   },
-};
+];
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({
@@ -54,10 +56,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading: true,
   });
   const [pendingUser, setPendingUser] = useState<User | null>(null);
+  const [storedUsers, setStoredUsers] = useState<StoredUser[]>([]);
 
   useEffect(() => {
     loadStoredAuth();
+    loadUsers();
   }, []);
+
+  const loadUsers = async () => {
+    try {
+      const stored = await AsyncStorage.getItem(USERS_KEY);
+      if (stored) {
+        setStoredUsers(JSON.parse(stored));
+      } else {
+        setStoredUsers(DEFAULT_USERS);
+        await AsyncStorage.setItem(USERS_KEY, JSON.stringify(DEFAULT_USERS));
+      }
+    } catch (error) {
+      setStoredUsers(DEFAULT_USERS);
+    }
+  };
 
   const loadStoredAuth = async () => {
     try {
@@ -78,15 +96,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    const demoUser = DEMO_USERS[email.toLowerCase()];
-    if (demoUser && demoUser.password === password) {
-      if (demoUser.user.twoFactorEnabled) {
-        setPendingUser(demoUser.user);
+    const users = storedUsers.length > 0 ? storedUsers : DEFAULT_USERS;
+    const foundUser = users.find(
+      (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password && u.isActive
+    );
+
+    if (foundUser) {
+      const user: User = {
+        id: foundUser.id,
+        email: foundUser.email,
+        name: foundUser.name,
+        role: foundUser.role,
+        twoFactorEnabled: foundUser.twoFactorEnabled,
+        createdAt: foundUser.createdAt,
+      };
+
+      if (foundUser.twoFactorEnabled) {
+        setPendingUser(user);
         return true;
       } else {
-        await AsyncStorage.setItem("@auth_user", JSON.stringify(demoUser.user));
+        await AsyncStorage.setItem("@auth_user", JSON.stringify(user));
         setState({
-          user: demoUser.user,
+          user,
           isAuthenticated: true,
           isLoading: false,
         });
@@ -128,6 +159,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const addUser = async (userData: Omit<StoredUser, "id" | "createdAt" | "isActive">): Promise<StoredUser> => {
+    const newUser: StoredUser = {
+      ...userData,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString(),
+      isActive: true,
+    };
+
+    const updatedUsers = [...storedUsers, newUser];
+    setStoredUsers(updatedUsers);
+    await AsyncStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
+    return newUser;
+  };
+
+  const getUsers = async (): Promise<StoredUser[]> => {
+    return storedUsers;
+  };
+
+  const toggleUserActive = async (userId: string): Promise<void> => {
+    const updatedUsers = storedUsers.map((u) =>
+      u.id === userId ? { ...u, isActive: !u.isActive } : u
+    );
+    setStoredUsers(updatedUsers);
+    await AsyncStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -136,6 +193,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         verify2FA,
         logout,
         switchRole,
+        addUser,
+        getUsers,
+        toggleUserActive,
       }}
     >
       {children}
