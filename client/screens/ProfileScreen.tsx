@@ -40,6 +40,21 @@ export default function ProfileScreen() {
     navigation.navigate("AdminPanel");
   };
 
+  const handleNotificationsSettings = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate("NotificationsSettings");
+  };
+
+  const handleSecuritySettings = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate("SecuritySettings");
+  };
+
+  const handleAbout = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate("About");
+  };
+
   if (!user) return null;
 
   const isAdmin = user.role === "admin";
@@ -157,19 +172,19 @@ export default function ProfileScreen() {
             Einstellungen
           </ThemedText>
           
-          <Pressable style={styles.menuItem}>
+          <Pressable style={styles.menuItem} onPress={handleNotificationsSettings}>
             <Feather name="bell" size={20} color={theme.text} />
             <ThemedText style={styles.menuLabel}>Benachrichtigungen</ThemedText>
             <Feather name="chevron-right" size={18} color={theme.textSecondary} />
           </Pressable>
           
-          <Pressable style={styles.menuItem}>
+          <Pressable style={styles.menuItem} onPress={handleSecuritySettings}>
             <Feather name="lock" size={20} color={theme.text} />
             <ThemedText style={styles.menuLabel}>Sicherheit</ThemedText>
             <Feather name="chevron-right" size={18} color={theme.textSecondary} />
           </Pressable>
           
-          <Pressable style={styles.menuItem}>
+          <Pressable style={styles.menuItem} onPress={handleAbout}>
             <Feather name="info" size={20} color={theme.text} />
             <ThemedText style={styles.menuLabel}>Ueber die App</ThemedText>
             <Feather name="chevron-right" size={18} color={theme.textSecondary} />

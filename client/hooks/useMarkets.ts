@@ -176,6 +176,7 @@ export function useMarkets() {
         id: Date.now().toString(),
         createdAt: new Date().toISOString(),
         status: "pending",
+        barcodeValue: info.barcodeValue,
       };
       const updatedInfos = [newInfo, ...marketInfos];
       setMarketInfos(updatedInfos);
@@ -183,7 +184,7 @@ export function useMarkets() {
 
       await addActivityLog({
         action: "add",
-        description: `Info hinzugefuegt: ${info.category}`,
+        description: info.category === "barcode" ? `Barcode hinzugefuegt: ${info.barcodeValue}` : `Info hinzugefuegt: ${info.category}`,
         marketId: info.marketId,
         marketName: markets.find((m) => m.id === info.marketId)?.name,
         userId: info.createdBy,
@@ -353,6 +354,91 @@ export function useMarkets() {
     [updateMarketField]
   );
 
+  const deleteMarket = useCallback(
+    async (marketId: string, userId: string, userName: string) => {
+      const market = markets.find((m) => m.id === marketId);
+      if (!market) return;
+
+      const updatedMarkets = markets.filter((m) => m.id !== marketId);
+      setMarkets(updatedMarkets);
+      await AsyncStorage.setItem(MARKETS_KEY, JSON.stringify(updatedMarkets));
+
+      // Remove associated market infos
+      const updatedInfos = marketInfos.filter((i) => i.marketId !== marketId);
+      setMarketInfos(updatedInfos);
+      await AsyncStorage.setItem(MARKET_INFOS_KEY, JSON.stringify(updatedInfos));
+
+      await addActivityLog({
+        action: "delete",
+        description: `Markt geloescht: ${market.name}`,
+        marketId,
+        marketName: market.name,
+        userId,
+        userName,
+      });
+    },
+    [markets, marketInfos, addActivityLog]
+  );
+
+  const updateMarket = useCallback(
+    async (
+      marketId: string,
+      marketData: Partial<Omit<Market, "id" | "createdAt" | "createdBy">>,
+      userId: string,
+      userName: string
+    ) => {
+      const market = markets.find((m) => m.id === marketId);
+      if (!market) return;
+
+      const updatedMarkets = markets.map((m) => {
+        if (m.id === marketId) {
+          return {
+            ...m,
+            ...marketData,
+            updatedAt: new Date().toISOString(),
+          };
+        }
+        return m;
+      });
+
+      setMarkets(updatedMarkets);
+      await AsyncStorage.setItem(MARKETS_KEY, JSON.stringify(updatedMarkets));
+
+      await addActivityLog({
+        action: "edit",
+        description: `Markt bearbeitet: ${market.name}`,
+        marketId,
+        marketName: marketData.name || market.name,
+        userId,
+        userName,
+      });
+
+      return updatedMarkets.find((m) => m.id === marketId);
+    },
+    [markets, addActivityLog]
+  );
+
+  const deleteMarketInfo = useCallback(
+    async (infoId: string, userId: string, userName: string) => {
+      const info = marketInfos.find((i) => i.id === infoId);
+      if (!info) return;
+
+      const updatedInfos = marketInfos.filter((i) => i.id !== infoId);
+      setMarketInfos(updatedInfos);
+      await AsyncStorage.setItem(MARKET_INFOS_KEY, JSON.stringify(updatedInfos));
+
+      await addActivityLog({
+        action: "delete",
+        description: `Info geloescht: ${info.category}`,
+        marketId: info.marketId,
+        marketName: markets.find((m) => m.id === info.marketId)?.name,
+        userId,
+        userName,
+      });
+    },
+    [marketInfos, markets, addActivityLog]
+  );
+
   const refresh = useCallback(() => {
     setIsLoading(true);
     loadData();
@@ -376,6 +462,9 @@ export function useMarkets() {
     addMarket,
     updateMarketField,
     updateDoorCode,
+    deleteMarket,
+    updateMarket,
+    deleteMarketInfo,
     refresh,
   };
 }

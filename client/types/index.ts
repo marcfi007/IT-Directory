@@ -57,8 +57,9 @@ export interface Market {
 export interface MarketInfo {
   id: string;
   marketId: string;
-  category: "parkplatz" | "it-info" | "barcode" | "sonstiges";
+  category: "parking" | "it-info" | "barcode" | "other";
   content: string;
+  barcodeValue?: string; // For barcode category, stores the actual barcode value
   status: "pending" | "approved" | "rejected";
   createdAt: string;
   createdBy: string;
