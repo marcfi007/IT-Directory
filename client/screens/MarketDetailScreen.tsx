@@ -346,18 +346,18 @@ export default function MarketDetailScreen() {
         </InfoSection>
 
         <InfoSection title="Barcodes" icon="maximize">
-          {market.egateBarcode ? (
+          {market.kassenBarcode ? (
             <View style={styles.barcodeContainer}>
               <ThemedText
                 style={[styles.barcodeLabel, { color: theme.textSecondary }]}
               >
-                eGate Barcode
+                Kassen-Barcode
               </ThemedText>
               <View
                 style={[styles.barcodeWrapper, { backgroundColor: "#FFFFFF" }]}
               >
                 <Barcode
-                  value={market.egateBarcode}
+                  value={market.kassenBarcode}
                   format="CODE128"
                   width={2}
                   height={60}
@@ -366,14 +366,38 @@ export default function MarketDetailScreen() {
                 />
               </View>
               <ThemedText style={[styles.barcodeValue, { color: theme.text }]}>
-                {market.egateBarcode}
+                {market.kassenBarcode}
+              </ThemedText>
+            </View>
+          ) : null}
+          {market.exitGateBarcode ? (
+            <View style={styles.barcodeContainer}>
+              <ThemedText
+                style={[styles.barcodeLabel, { color: theme.textSecondary }]}
+              >
+                ExitGate-Barcode
+              </ThemedText>
+              <View
+                style={[styles.barcodeWrapper, { backgroundColor: "#FFFFFF" }]}
+              >
+                <Barcode
+                  value={market.exitGateBarcode}
+                  format="CODE128"
+                  width={2}
+                  height={60}
+                  background="#FFFFFF"
+                  lineColor="#000000"
+                />
+              </View>
+              <ThemedText style={[styles.barcodeValue, { color: theme.text }]}>
+                {market.exitGateBarcode}
               </ThemedText>
             </View>
           ) : null}
           {market.barcodeInfo ? (
             <InfoRow label="Scanner-Info" value={market.barcodeInfo} copyable />
           ) : null}
-          {!market.egateBarcode && !market.barcodeInfo ? (
+          {!market.kassenBarcode && !market.exitGateBarcode && !market.barcodeInfo ? (
             <ThemedText style={[styles.noData, { color: theme.textSecondary }]}>
               Keine Barcode-Infos vorhanden
             </ThemedText>

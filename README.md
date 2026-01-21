@@ -1,6 +1,6 @@
 # IT-Markt Verzeichnis App
 
-Eine mobile App für IT-Servicetechniker zur Verwaltung von Markt-Informationen mit sensiblen IT-Daten. Die App bietet rollenbasierte Zugriffskontrolle, 2-Faktor-Authentifizierung und revisionssichere Protokollierung.
+Eine mobile App für IT-Servicetechniker zur Verwaltung von Markt-Informationen mit sensiblen IT-Daten. Die App bietet rollenbasierte Zugriffskontrolle, 2-Faktor-Authentifizierung (verpflichtend für alle) und revisionssichere Protokollierung.
 
 ![React Native](https://img.shields.io/badge/React%20Native-0.81.5-blue)
 ![Expo](https://img.shields.io/badge/Expo-54-black)
@@ -10,26 +10,26 @@ Eine mobile App für IT-Servicetechniker zur Verwaltung von Markt-Informationen 
 ## Inhaltsverzeichnis
 
 - [Features](#features)
-- [Screenshots](#screenshots)
 - [Tech-Stack](#tech-stack)
 - [Systemvoraussetzungen](#systemvoraussetzungen)
 - [Installation](#installation)
-- [Konfiguration](#konfiguration)
+- [APK Build (Android)](#apk-build-android)
+- [Server-Konfiguration](#server-konfiguration)
 - [Demo-Zugänge](#demo-zugänge)
+- [Benutzerrollen & Berechtigungen](#benutzerrollen--berechtigungen)
+- [2-Faktor-Authentifizierung](#2-faktor-authentifizierung)
+- [Registrierung](#registrierung)
 - [Projektstruktur](#projektstruktur)
-- [Benutzerrollen](#benutzerrollen)
-- [Hauptfunktionen](#hauptfunktionen)
-- [Development](#development)
-- [Build & Deployment](#build--deployment)
 - [Troubleshooting](#troubleshooting)
 
 ## Features
 
 - **Markt-Verzeichnis**: Zentrale Verwaltung aller IT-relevanten Marktinformationen
 - **Sichere Code-Speicherung**: Verschlüsselte Türcodes mit Verlaufshistorie
-- **Barcode-Integration**: Anzeige und Scannen von Barcodes (CODE128-Format)
+- **Barcode-Integration**: Separate Barcodes für Kasse und ExitGate (CODE128-Format)
 - **Rollenbasierte Berechtigungen**: Admin, Entwickler, Techniker
-- **2-Faktor-Authentifizierung**: Für Admins und Entwickler verpflichtend
+- **2-Faktor-Authentifizierung**: Verpflichtend für ALLE Benutzer (TOTP oder E-Mail)
+- **Registrierung mit Freigabe**: Neue Benutzer müssen von Admin/Entwickler freigegeben werden
 - **Audit-Protokollierung**: Vollständige Nachverfolgung aller Änderungen
 - **Offline-Fähig**: Daten werden lokal zwischengespeichert
 
@@ -42,24 +42,29 @@ Eine mobile App für IT-Servicetechniker zur Verwaltung von Markt-Informationen 
 | Navigation | React Navigation 7+ |
 | State Management | React Context + TanStack Query |
 | Datenspeicherung | AsyncStorage (lokaler Cache) |
-| Backend | Express.js (für statische Dateien) |
+| Backend | Express.js (optional) |
 | Barcode | @kichiyaki/react-native-barcode-generator |
-| Icons | @expo/vector-icons (Feather) |
+| 2FA | TOTP (Authenticator App) oder E-Mail |
 
 ## Systemvoraussetzungen
 
 ### Für Entwicklung
 
 - **Node.js**: Version 18.x oder höher
-- **npm**: Version 9.x oder höher (oder yarn/pnpm)
+- **npm**: Version 9.x oder höher
 - **Git**: Für Versionskontrolle
-- **Expo CLI**: Wird automatisch über npx verwendet
+- **Java JDK**: Version 17 (für Android-Builds)
+- **Android Studio**: Für Android SDK und Emulatoren
+
+### Für APK-Build
+
+- **EAS CLI**: Expo Application Services
+- **Expo Account**: Kostenlos auf expo.dev
 
 ### Für Mobile Testing
 
-- **iOS**: iPhone mit iOS 13.0+ oder iOS Simulator (nur macOS)
-- **Android**: Android 6.0+ (API Level 23) oder Android Emulator
-- **Expo Go App**: Für schnelles Testing auf physischen Geräten
+- **Android**: Android 6.0+ (API Level 23)
+- **iOS**: iPhone mit iOS 13.0+ (nur mit macOS)
 
 ## Installation
 
@@ -76,340 +81,367 @@ cd IT-Directory
 npm install
 ```
 
-### 3. Expo CLI prüfen
-
-Expo wird über npx verwendet, keine separate Installation nötig:
+### 3. App starten (Entwicklung)
 
 ```bash
-npx expo --version
-```
-
-### 4. App starten
-
-#### Option A: Mit Expo Go (empfohlen für Entwicklung)
-
-```bash
-# Frontend starten
+# Mit Expo Go App auf dem Handy
 npm run expo:dev
-```
 
-Scanne den QR-Code mit:
-- **iOS**: Kamera-App öffnen und QR-Code scannen
-- **Android**: Expo Go App öffnen und QR-Code scannen
+# Im Android Emulator
+npx expo start --android
 
-#### Option B: Mit Simulator/Emulator
-
-```bash
-# iOS Simulator (nur macOS)
+# Im iOS Simulator (nur macOS)
 npx expo start --ios
 
-# Android Emulator
-npx expo start --android
-```
-
-#### Option C: Web-Version
-
-```bash
+# Im Browser (Web)
 npx expo start --web
 ```
 
-### 5. Backend starten (optional)
+## APK Build (Android)
 
-Das Backend ist für die lokale Entwicklung optional, da die App AsyncStorage für Datenspeicherung verwendet:
+### Methode 1: EAS Build (Empfohlen)
+
+EAS Build erstellt die APK in der Cloud - kein lokales Android SDK erforderlich.
+
+#### 1. EAS CLI installieren
 
 ```bash
-npm run server:dev
+npm install -g eas-cli
 ```
 
-## Konfiguration
+#### 2. Bei Expo anmelden
 
-### Umgebungsvariablen
+```bash
+eas login
+```
 
-Erstelle eine `.env.local` Datei für lokale Konfiguration:
+#### 3. EAS konfigurieren (einmalig)
+
+```bash
+eas build:configure
+```
+
+#### 4. APK erstellen
+
+```bash
+# Development APK (zum Testen)
+eas build --platform android --profile preview
+
+# Production APK
+eas build --platform android --profile production
+```
+
+#### 5. APK herunterladen
+
+Nach Abschluss des Builds erhalten Sie einen Download-Link. Die APK kann direkt auf Android-Geräten installiert werden.
+
+### Methode 2: Lokaler Build
+
+Für lokale Builds benötigen Sie Android Studio und das Android SDK.
+
+#### 1. Voraussetzungen
+
+```bash
+# Prüfen, ob Android SDK installiert ist
+echo $ANDROID_HOME
+
+# Sollte ausgeben: /Users/[username]/Library/Android/sdk (macOS)
+# oder: C:\Users\[username]\AppData\Local\Android\Sdk (Windows)
+```
+
+#### 2. Native Ordner generieren
+
+```bash
+npx expo prebuild --platform android
+```
+
+#### 3. Debug APK erstellen
+
+```bash
+cd android
+./gradlew assembleDebug
+```
+
+Die APK befindet sich in: `android/app/build/outputs/apk/debug/app-debug.apk`
+
+#### 4. Release APK erstellen
+
+```bash
+cd android
+./gradlew assembleRelease
+```
+
+### APK auf Gerät installieren
+
+```bash
+# Via ADB (Android Debug Bridge)
+adb install app-release.apk
+
+# Oder: APK auf Gerät kopieren und dort öffnen
+```
+
+## Server-Konfiguration
+
+Die App funktioniert standalone mit AsyncStorage. Für Produktionsumgebungen empfehlen wir ein Backend.
+
+### Lokaler Entwicklungsserver
+
+```bash
+# Server starten
+npm run server:dev
+
+# Server läuft auf http://localhost:5000
+```
+
+### Produktions-Backend einrichten
+
+#### 1. Umgebungsvariablen
+
+Erstellen Sie `.env.local`:
 
 ```env
-# API Endpoint (optional, wenn Backend verwendet wird)
-EXPO_PUBLIC_API_URL=http://localhost:5000
+# API Endpoint
+EXPO_PUBLIC_API_URL=https://api.ihre-domain.de
 
-# Feature Flags
-EXPO_PUBLIC_ENABLE_BARCODE_SCANNER=true
-EXPO_PUBLIC_ENABLE_BIOMETRIC_AUTH=true
+# Datenbank (PostgreSQL)
+DATABASE_URL=postgresql://user:password@localhost:5432/itmarkt
+
+# JWT für Authentifizierung
+JWT_SECRET=ihr-super-geheimer-schluessel-mindestens-32-zeichen
+
+# E-Mail für 2FA (SMTP)
+SMTP_HOST=smtp.ihre-domain.de
+SMTP_PORT=587
+SMTP_USER=noreply@ihre-domain.de
+SMTP_PASS=ihr-smtp-passwort
+SMTP_FROM=IT-Markt <noreply@ihre-domain.de>
 ```
 
-### App-Konfiguration
+#### 2. Datenbank einrichten
 
-Die App-Konfiguration befindet sich in `app.json`:
+```bash
+# Datenbank-Schema pushen (Drizzle ORM)
+npm run db:push
+```
 
-```json
-{
-  "expo": {
-    "name": "Techniker Verzeichnissapp",
-    "slug": "technikerverzeichnissapp",
-    "version": "1.0.0",
-    ...
-  }
-}
+#### 3. Server für Produktion bauen
+
+```bash
+# Server kompilieren
+npm run server:build
+
+# Server starten
+npm run server:prod
+```
+
+### Docker Deployment
+
+```dockerfile
+# Dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+
+COPY server_dist ./server_dist
+
+EXPOSE 5000
+CMD ["node", "server_dist/index.js"]
+```
+
+```bash
+# Docker Image bauen
+docker build -t itmarkt-server .
+
+# Container starten
+docker run -d -p 5000:5000 --env-file .env itmarkt-server
 ```
 
 ## Demo-Zugänge
 
-| Rolle | E-Mail | Passwort | 2FA Code |
-|-------|--------|----------|----------|
-| Administrator | `admin@rewe-group.de` | `admin123` | `123456` |
-| Entwickler | `dev@rewe-group.de` | `dev123` | `123456` |
-| Techniker | `tech@rewe-group.de` | `tech123` | - |
+| Rolle | E-Mail | Passwort | 2FA |
+|-------|--------|----------|-----|
+| Administrator | `admin@rewe-group.de` | `admin123` | TOTP |
+| Entwickler | `dev@rewe-group.de` | `dev123` | TOTP |
+| Techniker | `tech@rewe-group.de` | `tech123` | E-Mail |
 
-> **Hinweis**: Der 2FA-Code ist für Demo-Zwecke statisch auf `123456` gesetzt.
+> **Hinweis**: Bei der Demo wird der 2FA-Code in der Browser-Konsole angezeigt. In Produktion erfolgt die Zustellung per E-Mail oder Authenticator-App.
+
+## Benutzerrollen & Berechtigungen
+
+### Administrator
+- Vollzugriff auf alle Funktionen
+- Kann Märkte bearbeiten und löschen
+- Kann Informationen bearbeiten und löschen
+- Kann Ergänzungen freigeben/ablehnen
+- Kann Benutzer verwalten und Registrierungen freigeben
+- Zugriff auf Audit-Logs
+- **2FA ist verpflichtend**
+
+### Entwickler
+- Gleiche Rechte wie Administrator
+- Kann Registrierungen freigeben
+- Zugriff auf API-Status
+- **2FA ist verpflichtend**
+
+### Techniker
+- Kann Märkte ansehen und durchsuchen
+- Kann neue Märkte anlegen
+- Kann Informationen hinzufügen (zur Freigabe)
+- Kann Türcodes ansehen und aktualisieren
+- **2FA ist verpflichtend**
+
+### Berechtigungsübersicht
+
+| Aktion | Admin | Entwickler | Techniker |
+|--------|-------|------------|-----------|
+| Märkte ansehen | ✅ | ✅ | ✅ |
+| Märkte anlegen | ✅ | ✅ | ✅ |
+| Märkte bearbeiten | ✅ | ❌ | ❌ |
+| Märkte löschen | ✅ | ❌ | ❌ |
+| Infos hinzufügen | ✅ | ✅ | ✅ |
+| Infos freigeben | ✅ | ❌ | ❌ |
+| Infos löschen | ✅ | ❌ | ❌ |
+| Benutzer verwalten | ✅ | ❌ | ❌ |
+| Registrierungen freigeben | ✅ | ✅ | ❌ |
+
+## 2-Faktor-Authentifizierung
+
+2FA ist **verpflichtend für ALLE Benutzer**.
+
+### Unterstützte Methoden
+
+#### 1. TOTP (Authenticator App)
+- Google Authenticator
+- Microsoft Authenticator
+- Authy
+- 1Password
+- Bitwarden
+
+#### 2. E-Mail
+- 6-stelliger Code per E-Mail
+- Gültig für 5 Minuten
+
+### 2FA einrichten
+
+1. Bei der ersten Anmeldung wird 2FA-Einrichtung gefordert
+2. Methode wählen (TOTP oder E-Mail)
+3. Bei TOTP: Secret in Authenticator-App eingeben
+4. Verifizierungscode eingeben
+
+### 2FA-Codes (Demo)
+
+In der Entwicklungsumgebung werden die Codes in der Konsole angezeigt:
+```
+[2FA Email] Code fuer admin@rewe-group.de: 123456
+[2FA TOTP] Code fuer dev@rewe-group.de: 654321
+```
+
+## Registrierung
+
+### Ablauf
+
+1. **Registrierung beantragen**: Benutzer füllt Registrierungsformular aus
+2. **Warten auf Freigabe**: Admin oder Entwickler prüft die Anfrage
+3. **Freigabe/Ablehnung**: Admin weist eine Rolle zu und gibt frei
+4. **2FA einrichten**: Beim ersten Login muss 2FA eingerichtet werden
+5. **Zugang aktiv**: Benutzer kann die App vollständig nutzen
+
+### Als Admin Registrierungen verwalten
+
+1. Profil → Admin-Bereich
+2. Tab "Registr." wählen
+3. Anfrage prüfen
+4. Rolle zuweisen (Admin/Entwickler/Techniker)
+5. Freigeben oder Ablehnen
 
 ## Projektstruktur
 
 ```
 IT-Directory/
 ├── client/                     # React Native App
-│   ├── App.tsx                 # Haupt-App mit Providern
-│   ├── components/             # Wiederverwendbare UI-Komponenten
-│   │   ├── ActivityItem.tsx    # Aktivitäts-Log Eintrag
-│   │   ├── Button.tsx          # Button-Komponente
-│   │   ├── Card.tsx            # Karten-Komponente
-│   │   ├── EmptyState.tsx      # Leerer Zustand Anzeige
-│   │   ├── FAB.tsx             # Floating Action Button
-│   │   ├── InfoRow.tsx         # Info-Zeile mit Kopieren/Bearbeiten
-│   │   ├── InfoSection.tsx     # Aufklappbare Info-Sektion
-│   │   ├── Input.tsx           # Eingabefeld-Komponente
-│   │   ├── MarketCard.tsx      # Markt-Karte
-│   │   ├── RoleBadge.tsx       # Rollen-Badge
-│   │   └── SearchBar.tsx       # Suchleiste
-│   ├── constants/
-│   │   └── theme.ts            # Design-Tokens & Farben
+│   ├── App.tsx                 # Haupt-App
+│   ├── components/             # UI-Komponenten
 │   ├── contexts/
-│   │   ├── AuthContext.tsx     # Authentifizierung State
-│   │   └── MarketContext.tsx   # Markt-Daten State
+│   │   ├── AuthContext.tsx     # Authentifizierung & 2FA
+│   │   └── MarketContext.tsx   # Markt-Daten
 │   ├── hooks/
-│   │   ├── useMarkets.ts       # Markt-Daten Logik
-│   │   ├── useScreenOptions.ts # Navigation Optionen
-│   │   └── useTheme.ts         # Theme Hook
-│   ├── navigation/
-│   │   ├── RootStackNavigator.tsx
-│   │   ├── MainTabNavigator.tsx
-│   │   └── *StackNavigator.tsx
+│   │   └── useMarkets.ts       # Markt-Logik
+│   ├── navigation/             # Navigation
 │   ├── screens/
-│   │   ├── LoginScreen.tsx           # Anmeldung + 2FA
-│   │   ├── MarketsScreen.tsx         # Markt-Übersicht
-│   │   ├── MarketDetailScreen.tsx    # Markt-Details
-│   │   ├── AddMarketScreen.tsx       # Neuer Markt
-│   │   ├── AddInfoScreen.tsx         # Info hinzufügen
-│   │   ├── ScanScreen.tsx            # Barcode-Scanner
-│   │   ├── ActivityScreen.tsx        # Aktivitäts-Log
-│   │   ├── ProfileScreen.tsx         # Profil & Einstellungen
-│   │   ├── AdminPanelScreen.tsx      # Admin-Bereich
-│   │   ├── NotificationsSettingsScreen.tsx
-│   │   ├── SecuritySettingsScreen.tsx
-│   │   └── AboutScreen.tsx
+│   │   ├── LoginScreen.tsx     # Login, Registrierung, 2FA
+│   │   ├── MarketsScreen.tsx   # Markt-Übersicht
+│   │   ├── MarketDetailScreen.tsx # Markt-Details mit Barcodes
+│   │   ├── AdminPanelScreen.tsx # Admin: Freigaben, Benutzer, Registrierungen
+│   │   └── ...
 │   └── types/
 │       └── index.ts            # TypeScript Typen
 ├── server/                     # Express Backend
-│   ├── index.ts
-│   ├── routes.ts
-│   └── storage.ts
-├── shared/
-│   └── schema.ts               # Datenbank Schema (Drizzle)
-├── assets/
-│   └── images/                 # App-Icons & Bilder
+├── assets/                     # Bilder & Icons
 ├── app.json                    # Expo Konfiguration
+├── eas.json                    # EAS Build Konfiguration
 ├── package.json
-├── tsconfig.json
 └── README.md
 ```
 
-## Benutzerrollen
+## Barcode-Felder
 
-### Administrator
-- **Vollzugriff** auf alle Funktionen
-- Kann Märkte bearbeiten und löschen
-- Kann Informationen bearbeiten und löschen
-- Kann Ergänzungen freigeben/ablehnen
-- Kann Benutzer verwalten (aktivieren/deaktivieren)
-- Zugriff auf Audit-Logs
-- **2FA ist verpflichtend**
+Die App unterstützt zwei separate Barcode-Felder pro Markt:
 
-### Entwickler
-- Gleiche Rechte wie Techniker
-- Zugriff auf API-Status und Debug-Informationen
-- **2FA ist verpflichtend**
+| Feld | Verwendung |
+|------|------------|
+| **Kassen-Barcode** | Für Kassen-Zugang und -Verwaltung |
+| **ExitGate-Barcode** | Für eGate/Ausgang-Zugang |
 
-### Techniker (Standard-Benutzer)
-- Kann Märkte ansehen und durchsuchen
-- Kann neue Märkte anlegen
-- Kann Informationen hinzufügen (werden zur Freigabe gesendet)
-- Kann Türcodes ansehen und aktualisieren
-- **2FA ist optional**
-
-## Hauptfunktionen
-
-### Markt-Verzeichnis
-- Suche nach WAWI-Nummer, Name oder Stadt
-- Detailansicht mit allen IT-Informationen
-- Verschlüsselte Türcodes (durch Tippen aufdecken)
-- Barcodes werden als echte Barcodes (CODE128) angezeigt
-
-### Türcode-Verwaltung
-- **Aufdecken**: Tippen auf das Schloss-Symbol zeigt den Code
-- **Bearbeiten**: Alle Benutzer können Codes aktualisieren
-- **Verlauf**: Alte Codes werden in Rot mit Durchstreichung angezeigt
-
-### Info hinzufügen
-- Alle Benutzer können Ergänzungen hinzufügen
-- Ergänzungen werden zur Freigabe an Admin gesendet
-- Kategorien: Parkplatz, IT-Info, Barcode, Sonstiges
-- Bei Barcode: Live-Vorschau des Barcodes
-
-### Barcode-Scanner
-- QR- und Barcode-Erkennung
-- Automatische Markt-Suche bei Scan
-
-### Admin-Bereich
-- **Freigaben**: Ergänzungen freigeben oder ablehnen
-- **Benutzer**: Mitarbeiter verwalten
-- **Audit-Logs**: Alle Aktivitäten einsehen
-
-### Einstellungen
-- **Benachrichtigungen**: Push-Einstellungen konfigurieren
-- **Sicherheit**: Biometrische Anmeldung, Passwort ändern
-- **Über die App**: App-Info, rechtliche Dokumente
-
-## Development
-
-### Scripts
-
-```bash
-# Frontend starten (Expo Dev Server)
-npm run expo:dev
-
-# Backend starten (Express Server)
-npm run server:dev
-
-# TypeScript prüfen
-npm run check:types
-
-# Linting
-npm run lint
-npm run lint:fix
-
-# Formatierung
-npm run format
-npm run check:format
-```
-
-### Hot Module Reloading
-
-Die App nutzt Hot Module Reloading. Änderungen im Code werden automatisch aktualisiert ohne Server-Neustart.
-
-### Debugging
-
-1. **React Native Debugger**: Schüttle das Gerät oder drücke `m` im Terminal
-2. **Console Logs**: Werden im Terminal angezeigt
-3. **Network Requests**: In den React DevTools sichtbar
-
-## Build & Deployment
-
-### Expo Build (EAS)
-
-```bash
-# EAS CLI installieren
-npm install -g eas-cli
-
-# Bei Expo anmelden
-eas login
-
-# Build für iOS
-eas build --platform ios
-
-# Build für Android
-eas build --platform android
-
-# Build für beide Plattformen
-eas build --platform all
-```
-
-### Lokaler Build
-
-```bash
-# iOS (nur macOS)
-npx expo run:ios --configuration Release
-
-# Android
-npx expo run:android --variant release
-```
-
-### Web-Build
-
-```bash
-# Statischen Web-Build erstellen
-npx expo export --platform web
-
-# Oder mit dem vorhandenen Script
-npm run expo:static:build
-```
+Barcodes werden im **CODE128-Format** angezeigt und können direkt gescannt werden.
 
 ## Troubleshooting
 
-### Häufige Probleme
+### APK Build schlägt fehl
 
-#### "Unable to resolve module" Fehler
+```bash
+# EAS Cache löschen
+eas build:cancel
+eas build --clear-cache --platform android
+
+# Lokaler Build: Gradle Cache löschen
+cd android && ./gradlew clean
+```
+
+### 2FA Code wird nicht akzeptiert
+
+- Stellen Sie sicher, dass die Systemzeit korrekt ist (für TOTP)
+- E-Mail-Codes sind nur 5 Minuten gültig
+- Fordern Sie einen neuen Code an
+
+### Expo Go zeigt "Network Error"
+
+```bash
+# Tunnel-Modus verwenden
+npx expo start --tunnel
+```
+
+### Metro Bundler Probleme
 
 ```bash
 # Cache löschen und neu starten
 npx expo start -c
 ```
 
-#### Metro Bundler Probleme
+### AsyncStorage Daten zurücksetzen
 
-```bash
-# Node modules neu installieren
-rm -rf node_modules
-rm package-lock.json
-npm install
-```
-
-#### iOS Simulator startet nicht (macOS)
-
-```bash
-# Xcode Command Line Tools installieren
-xcode-select --install
-
-# Simulator zurücksetzen
-xcrun simctl shutdown all
-xcrun simctl erase all
-```
-
-#### Android Emulator Probleme
-
-1. Prüfe, ob ANDROID_HOME gesetzt ist
-2. Stelle sicher, dass ein Emulator erstellt ist
-3. Starte den Emulator manuell über Android Studio
-
-#### Expo Go zeigt "Network Error"
-
-1. Stelle sicher, dass Gerät und Computer im gleichen WLAN sind
-2. Prüfe Firewall-Einstellungen
-3. Verwende `npx expo start --tunnel` für Tunnel-Modus
-
-### Logs
-
-```bash
-# Expo Logs anzeigen
-npx expo start --clear
-
-# Metro Logs
-npx react-native log-android  # Android
-npx react-native log-ios      # iOS
+```javascript
+// In der App-Konsole ausführen:
+import AsyncStorage from '@react-native-async-storage/async-storage';
+await AsyncStorage.clear();
 ```
 
 ## Support
 
 Bei Fragen oder Problemen:
-- Erstelle ein GitHub Issue
-- Kontaktiere das Entwicklungsteam
+- GitHub Issue erstellen
+- Dokumentation in `/docs` prüfen
 
 ---
 

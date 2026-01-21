@@ -24,18 +24,19 @@ import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMarketContext } from "@/contexts/MarketContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
-import { MarketInfo, ActivityLog, StoredUser, UserRole } from "@/types";
+import { MarketInfo, ActivityLog, StoredUser, UserRole, PendingRegistration } from "@/types";
 
-type TabType = "pending" | "users" | "logs";
+type TabType = "pending" | "registrations" | "users" | "logs";
 
 const TABS: {
   key: TabType;
   label: string;
   icon: keyof typeof Feather.glyphMap;
 }[] = [
-  { key: "pending", label: "Freigaben", icon: "clock" },
+  { key: "pending", label: "Infos", icon: "clock" },
+  { key: "registrations", label: "Registr.", icon: "user-plus" },
   { key: "users", label: "Benutzer", icon: "users" },
-  { key: "logs", label: "Audit-Logs", icon: "file-text" },
+  { key: "logs", label: "Logs", icon: "file-text" },
 ];
 
 const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
@@ -48,7 +49,7 @@ export default function AdminPanelScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const { theme } = useTheme();
-  const { user, getUsers, addUser, toggleUserActive } = useAuth();
+  const { user, getUsers, addUser, toggleUserActive, getPendingRegistrations, approveRegistration, rejectRegistration } = useAuth();
   const {
     getPendingInfos,
     activityLogs,
@@ -60,23 +61,37 @@ export default function AdminPanelScreen() {
 
   const [activeTab, setActiveTab] = useState<TabType>("pending");
   const [users, setUsers] = useState<StoredUser[]>([]);
+  const [pendingRegistrations, setPendingRegistrations] = useState<PendingRegistration[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [selectedRegistration, setSelectedRegistration] = useState<PendingRegistration | null>(null);
+  const [selectedRole, setSelectedRole] = useState<UserRole>("user");
   const [newUserName, setNewUserName] = useState("");
   const [newUserEmail, setNewUserEmail] = useState("");
   const [newUserPassword, setNewUserPassword] = useState("");
   const [newUserRole, setNewUserRole] = useState<UserRole>("user");
-  const [newUser2FA, setNewUser2FA] = useState(false);
+  const [newUser2FA, setNewUser2FA] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
   const pendingInfos = getPendingInfos();
 
   useEffect(() => {
-    loadUsers();
+    loadData();
   }, []);
+
+  const loadData = async () => {
+    await loadUsers();
+    await loadPendingRegistrations();
+  };
 
   const loadUsers = async () => {
     const loadedUsers = await getUsers();
     setUsers(loadedUsers);
+  };
+
+  const loadPendingRegistrations = async () => {
+    const registrations = await getPendingRegistrations();
+    setPendingRegistrations(registrations);
   };
 
   const handleApprove = async (info: MarketInfo) => {
@@ -88,6 +103,43 @@ export default function AdminPanelScreen() {
   const handleReject = async (info: MarketInfo) => {
     if (!user) return;
     await rejectMarketInfo(info.id, user.id, user.name);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+  };
+
+  const handleOpenApproveModal = (registration: PendingRegistration) => {
+    setSelectedRegistration(registration);
+    setSelectedRole("user");
+    setShowApproveModal(true);
+  };
+
+  const handleApproveRegistration = async () => {
+    if (!user || !selectedRegistration) return;
+    setIsLoading(true);
+    await approveRegistration(selectedRegistration.id, selectedRole, user.id);
+    await addActivityLog({
+      action: "approve",
+      description: `Registrierung freigegeben: ${selectedRegistration.name} als ${selectedRole}`,
+      userId: user.id,
+      userName: user.name,
+    });
+    await loadPendingRegistrations();
+    await loadUsers();
+    setShowApproveModal(false);
+    setSelectedRegistration(null);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setIsLoading(false);
+  };
+
+  const handleRejectRegistration = async (registration: PendingRegistration) => {
+    if (!user) return;
+    await rejectRegistration(registration.id);
+    await addActivityLog({
+      action: "reject",
+      description: `Registrierung abgelehnt: ${registration.name}`,
+      userId: user.id,
+      userName: user.name,
+    });
+    await loadPendingRegistrations();
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
   };
 
@@ -320,6 +372,61 @@ export default function AdminPanelScreen() {
     [],
   );
 
+  const renderRegistrationItem = useCallback(
+    ({ item, index }: { item: PendingRegistration; index: number }) => (
+      <Animated.View
+        entering={FadeInDown.delay(index * 50).duration(250)}
+        style={[
+          styles.pendingCard,
+          { backgroundColor: theme.cardBackground, borderColor: theme.border },
+        ]}
+      >
+        <View style={styles.pendingHeader}>
+          <View
+            style={[styles.categoryBadge, { backgroundColor: theme.warning + "15" }]}
+          >
+            <ThemedText style={[styles.categoryText, { color: theme.warning }]}>
+              REGISTRIERUNG
+            </ThemedText>
+          </View>
+          <ThemedText style={[styles.pendingDate, { color: theme.textSecondary }]}>
+            {new Date(item.requestedAt).toLocaleDateString("de-DE")}
+          </ThemedText>
+        </View>
+
+        <View style={styles.registrationInfo}>
+          <ThemedText type="h4" style={styles.registrationName}>
+            {item.name}
+          </ThemedText>
+          <ThemedText style={[styles.registrationEmail, { color: theme.textSecondary }]}>
+            {item.email}
+          </ThemedText>
+        </View>
+
+        <View style={styles.pendingFooter}>
+          <ThemedText style={[styles.pendingAuthor, { color: theme.textSecondary }]}>
+            Warte auf Freigabe
+          </ThemedText>
+          <View style={styles.pendingActions}>
+            <Pressable
+              onPress={() => handleRejectRegistration(item)}
+              style={[styles.actionButton, { backgroundColor: theme.error + "15" }]}
+            >
+              <Feather name="x" size={18} color={theme.error} />
+            </Pressable>
+            <Pressable
+              onPress={() => handleOpenApproveModal(item)}
+              style={[styles.actionButton, { backgroundColor: theme.verified + "15" }]}
+            >
+              <Feather name="check" size={18} color={theme.verified} />
+            </Pressable>
+          </View>
+        </View>
+      </Animated.View>
+    ),
+    [theme, handleRejectRegistration, handleOpenApproveModal],
+  );
+
   const renderContent = () => {
     switch (activeTab) {
       case "pending":
@@ -336,6 +443,22 @@ export default function AdminPanelScreen() {
             icon="check-circle"
             title="Keine ausstehenden Freigaben"
             description="Alle Ergaenzungen wurden bearbeitet"
+          />
+        );
+      case "registrations":
+        return pendingRegistrations.length > 0 ? (
+          <FlatList
+            data={pendingRegistrations}
+            keyExtractor={(item) => item.id}
+            renderItem={renderRegistrationItem}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+          />
+        ) : (
+          <EmptyState
+            icon="user-check"
+            title="Keine offenen Registrierungen"
+            description="Alle Registrierungsanfragen wurden bearbeitet"
           />
         );
       case "users":
@@ -382,7 +505,11 @@ export default function AdminPanelScreen() {
       <View style={[styles.tabBar, { paddingTop: headerHeight + Spacing.md }]}>
         {TABS.map((tab) => {
           const isActive = activeTab === tab.key;
-          const count = tab.key === "pending" ? pendingInfos.length : undefined;
+          const count = tab.key === "pending" 
+            ? pendingInfos.length 
+            : tab.key === "registrations" 
+              ? pendingRegistrations.length 
+              : undefined;
 
           return (
             <Pressable
@@ -576,6 +703,111 @@ export default function AdminPanelScreen() {
                 Anlegen
               </Button>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Approve Registration Modal */}
+      <Modal
+        visible={showApproveModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowApproveModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View
+            style={[
+              styles.modalContent,
+              { backgroundColor: theme.cardBackground },
+            ]}
+          >
+            <View style={styles.modalHeader}>
+              <ThemedText type="h3">Registrierung freigeben</ThemedText>
+              <Pressable
+                onPress={() => setShowApproveModal(false)}
+                style={styles.modalClose}
+              >
+                <Feather name="x" size={24} color={theme.text} />
+              </Pressable>
+            </View>
+
+            {selectedRegistration ? (
+              <>
+                <View style={[styles.registrationPreview, { backgroundColor: theme.backgroundSecondary }]}>
+                  <ThemedText type="h4">{selectedRegistration.name}</ThemedText>
+                  <ThemedText style={{ color: theme.textSecondary }}>{selectedRegistration.email}</ThemedText>
+                </View>
+
+                <ThemedText
+                  style={[styles.inputLabel, { color: theme.textSecondary }]}
+                >
+                  Rolle zuweisen
+                </ThemedText>
+                <View style={styles.roleOptions}>
+                  {ROLE_OPTIONS.map((option) => (
+                    <Pressable
+                      key={option.value}
+                      onPress={() => setSelectedRole(option.value)}
+                      style={[
+                        styles.roleOption,
+                        {
+                          backgroundColor:
+                            selectedRole === option.value
+                              ? theme.primary
+                              : "transparent",
+                          borderColor:
+                            selectedRole === option.value
+                              ? theme.primary
+                              : theme.border,
+                        },
+                      ]}
+                    >
+                      <ThemedText
+                        style={[
+                          styles.roleOptionText,
+                          {
+                            color:
+                              selectedRole === option.value ? "#FFFFFF" : theme.text,
+                          },
+                        ]}
+                      >
+                        {option.label}
+                      </ThemedText>
+                    </Pressable>
+                  ))}
+                </View>
+
+                <View
+                  style={[
+                    styles.infoBox,
+                    { backgroundColor: theme.primary + "15" },
+                  ]}
+                >
+                  <Feather name="shield" size={16} color={theme.primary} />
+                  <ThemedText
+                    style={[styles.infoBoxText, { color: theme.primary }]}
+                  >
+                    2FA wird beim ersten Login eingerichtet (verpflichtend)
+                  </ThemedText>
+                </View>
+
+                <View style={styles.modalButtons}>
+                  <Pressable
+                    onPress={() => setShowApproveModal(false)}
+                    style={[styles.cancelButton, { borderColor: theme.border }]}
+                  >
+                    <ThemedText style={{ color: theme.text }}>Abbrechen</ThemedText>
+                  </Pressable>
+                  <Button
+                    onPress={handleApproveRegistration}
+                    style={styles.saveButton}
+                    disabled={isLoading}
+                  >
+                    Freigeben
+                  </Button>
+                </View>
+              </>
+            ) : null}
           </View>
         </View>
       </Modal>
@@ -836,5 +1068,20 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     flex: 1,
+  },
+  registrationInfo: {
+    marginBottom: Spacing.md,
+  },
+  registrationName: {
+    marginBottom: 2,
+  },
+  registrationEmail: {
+    fontSize: 14,
+  },
+  registrationPreview: {
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.sm,
+    marginBottom: Spacing.lg,
+    alignItems: "center",
   },
 });

@@ -5,6 +5,47 @@ Alle bemerkenswerten Änderungen an diesem Projekt werden in dieser Datei dokume
 Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/),
 und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 
+## [1.1.0] - 2026-01-21
+
+### Hinzugefügt
+
+#### Barcode-Felder
+- **Kassen-Barcode**: Separates Feld für Kassen-Zugang
+- **ExitGate-Barcode**: Separates Feld für eGate/Ausgang
+- Barcodes werden als echte CODE128-Barcodes angezeigt
+
+#### 2-Faktor-Authentifizierung (Neu)
+- 2FA ist jetzt **verpflichtend für ALLE Benutzer**
+- Zwei Methoden: TOTP (Authenticator App) oder E-Mail
+- 2FA-Setup beim ersten Login
+- Code-Resend-Funktion
+
+#### Registrierung mit Freigabe
+- Neue Benutzer können sich selbst registrieren
+- Registrierungen müssen von Admin/Entwickler freigegeben werden
+- Admin kann Rolle bei Freigabe zuweisen
+- Neuer Tab "Registrierungen" im Admin-Bereich
+
+#### Dokumentation
+- APK-Build-Anleitung (EAS und lokal)
+- Server-Konfiguration dokumentiert
+- Docker Deployment Anleitung
+- Vollständige Berechtigungsmatrix
+
+### Geändert
+- LoginScreen mit Registrierung und 2FA-Setup erweitert
+- AdminPanelScreen mit Registrierungsverwaltung
+- AuthContext komplett überarbeitet für 2FA und Registrierung
+- AddMarketScreen mit neuen Barcode-Feldern
+- MarketDetailScreen zeigt Kassen- und ExitGate-Barcodes
+
+### Technisch
+- Neue Types: TwoFactorMethod, RegistrationStatus, PendingRegistration
+- Market-Type um kassenBarcode und exitGateBarcode erweitert
+- StoredUser um 2FA-Felder und registrationStatus erweitert
+
+---
+
 ## [1.0.0] - 2026-01-21
 
 ### Hinzugefügt

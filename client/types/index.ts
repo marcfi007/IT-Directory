@@ -1,4 +1,6 @@
 export type UserRole = "admin" | "developer" | "user";
+export type RegistrationStatus = "pending" | "approved" | "rejected";
+export type TwoFactorMethod = "totp" | "email";
 
 export interface User {
   id: string;
@@ -6,6 +8,8 @@ export interface User {
   name: string;
   role: UserRole;
   twoFactorEnabled: boolean;
+  twoFactorMethod?: TwoFactorMethod;
+  twoFactorSecret?: string;
   createdAt: string;
 }
 
@@ -13,6 +17,7 @@ export interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  pendingRegistration?: boolean;
 }
 
 export interface FieldHistory {
@@ -37,8 +42,14 @@ export interface Market {
   doorCodesHistory?: CodeHistoryEntry[];
   egateAccess?: string;
   egateAccessHistory?: FieldHistory[];
+  // Barcode für Kassen-Zugang
+  kassenBarcode?: string;
+  kassenBarcodeHistory?: FieldHistory[];
+  // Barcode für ExitGate/eGate
+  exitGateBarcode?: string;
+  exitGateBarcodeHistory?: FieldHistory[];
+  // Legacy field - kept for compatibility
   egateBarcode?: string;
-  egateAccessBarcode?: FieldHistory[];
   barcodeInfo?: string;
   barcodeInfoHistory?: FieldHistory[];
   serverLocation?: string;
@@ -96,7 +107,22 @@ export interface StoredUser {
   name: string;
   role: UserRole;
   twoFactorEnabled: boolean;
+  twoFactorMethod?: TwoFactorMethod;
+  twoFactorSecret?: string;
+  twoFactorBackupCodes?: string[];
   createdAt: string;
   createdBy?: string;
   isActive: boolean;
+  registrationStatus: RegistrationStatus;
+  approvedBy?: string;
+  approvedAt?: string;
+}
+
+export interface PendingRegistration {
+  id: string;
+  email: string;
+  password: string;
+  name: string;
+  requestedAt: string;
+  status: RegistrationStatus;
 }

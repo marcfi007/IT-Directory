@@ -28,7 +28,8 @@ export default function AddMarketScreen() {
   const [parkingInfo, setParkingInfo] = useState("");
   const [doorCodes, setDoorCodes] = useState("");
   const [egateAccess, setEgateAccess] = useState("");
-  const [egateBarcode, setEgateBarcode] = useState("");
+  const [kassenBarcode, setKassenBarcode] = useState("");
+  const [exitGateBarcode, setExitGateBarcode] = useState("");
   const [serverLocation, setServerLocation] = useState("");
   const [switchRouterLocation, setSwitchRouterLocation] = useState("");
   const [specialNotes, setSpecialNotes] = useState("");
@@ -80,7 +81,8 @@ export default function AddMarketScreen() {
             ? `encrypted:${doorCodes.trim()}`
             : undefined,
           egateAccess: egateAccess.trim() || undefined,
-          egateBarcode: egateBarcode.trim() || undefined,
+          kassenBarcode: kassenBarcode.trim() || undefined,
+          exitGateBarcode: exitGateBarcode.trim() || undefined,
           serverLocation: serverLocation.trim() || undefined,
           switchRouterLocation: switchRouterLocation.trim() || undefined,
           specialNotes: specialNotes.trim() || undefined,
@@ -205,12 +207,34 @@ export default function AddMarketScreen() {
             onChangeText={setEgateAccess}
             leftIcon="key"
           />
+        </View>
+
+        <View
+          style={[
+            styles.section,
+            {
+              backgroundColor: theme.cardBackground,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <ThemedText style={[styles.sectionTitle, { color: theme.primary }]}>
+            Barcodes
+          </ThemedText>
 
           <Input
-            label="eGate-Barcode"
-            placeholder="z.B. MM1006MITTE"
-            value={egateBarcode}
-            onChangeText={setEgateBarcode}
+            label="Kassen-Barcode"
+            placeholder="z.B. KASSE2001ALEX"
+            value={kassenBarcode}
+            onChangeText={setKassenBarcode}
+            leftIcon="maximize"
+          />
+
+          <Input
+            label="ExitGate-Barcode"
+            placeholder="z.B. EXIT2001ALEX"
+            value={exitGateBarcode}
+            onChangeText={setExitGateBarcode}
             leftIcon="maximize"
           />
         </View>
