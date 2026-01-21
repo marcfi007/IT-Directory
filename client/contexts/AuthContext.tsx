@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User, UserRole, AuthState, StoredUser } from "@/types";
 
-const USERS_KEY = "@stored_users";
+const USERS_KEY = "@stored_users_v2";
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<boolean>;
@@ -56,29 +56,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading: true,
   });
   const [pendingUser, setPendingUser] = useState<User | null>(null);
-  const [storedUsers, setStoredUsers] = useState<StoredUser[]>([]);
+  const usersRef = useRef<StoredUser[]>(DEFAULT_USERS);
 
   useEffect(() => {
-    loadStoredAuth();
-    loadUsers();
+    initializeAuth();
   }, []);
 
-  const loadUsers = async () => {
+  const initializeAuth = async () => {
     try {
+      await AsyncStorage.removeItem("@stored_users");
+      
       const stored = await AsyncStorage.getItem(USERS_KEY);
       if (stored) {
-        setStoredUsers(JSON.parse(stored));
+        usersRef.current = JSON.parse(stored);
       } else {
-        setStoredUsers(DEFAULT_USERS);
+        usersRef.current = DEFAULT_USERS;
         await AsyncStorage.setItem(USERS_KEY, JSON.stringify(DEFAULT_USERS));
       }
-    } catch (error) {
-      setStoredUsers(DEFAULT_USERS);
-    }
-  };
 
-  const loadStoredAuth = async () => {
-    try {
       const storedUser = await AsyncStorage.getItem("@auth_user");
       if (storedUser) {
         const user = JSON.parse(storedUser) as User;
@@ -91,12 +86,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setState((prev) => ({ ...prev, isLoading: false }));
       }
     } catch (error) {
+      usersRef.current = DEFAULT_USERS;
       setState((prev) => ({ ...prev, isLoading: false }));
     }
   };
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    const users = storedUsers.length > 0 ? storedUsers : DEFAULT_USERS;
+    const users = usersRef.current;
     const foundUser = users.find(
       (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password && u.isActive
     );
@@ -167,21 +163,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isActive: true,
     };
 
-    const updatedUsers = [...storedUsers, newUser];
-    setStoredUsers(updatedUsers);
+    const updatedUsers = [...usersRef.current, newUser];
+    usersRef.current = updatedUsers;
     await AsyncStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
     return newUser;
   };
 
   const getUsers = async (): Promise<StoredUser[]> => {
-    return storedUsers;
+    return usersRef.current;
   };
 
   const toggleUserActive = async (userId: string): Promise<void> => {
-    const updatedUsers = storedUsers.map((u) =>
+    const updatedUsers = usersRef.current.map((u) =>
       u.id === userId ? { ...u, isActive: !u.isActive } : u
     );
-    setStoredUsers(updatedUsers);
+    usersRef.current = updatedUsers;
     await AsyncStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
   };
 

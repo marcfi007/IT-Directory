@@ -38,7 +38,7 @@ export default function LoginScreen() {
     if (success) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       const demoUser = email.toLowerCase();
-      if (demoUser === "admin@itmarkt.de" || demoUser === "dev@itmarkt.de") {
+      if (demoUser === "admin@rewe-group.de" || demoUser === "dev@rewe-group.de") {
         setShowTwoFactor(true);
       }
     } else {
