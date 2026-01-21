@@ -60,6 +60,10 @@ export interface Market {
   specialNotesHistory?: FieldHistory[];
   freeTextNotes?: string;
   freeTextNotesHistory?: FieldHistory[];
+  // KV (Kundenverschulden) - Flag für erhöhte Aufmerksamkeit
+  kvFlag?: boolean;
+  kvReason?: string;
+  kvHistory?: FieldHistory[];
   createdAt: string;
   updatedAt: string;
   createdBy: string;

@@ -31,7 +31,10 @@ interface AuthContextType extends AuthState {
     name: string,
   ) => Promise<RegistrationResult>;
   addUser: (
-    userData: Omit<StoredUser, "id" | "createdAt" | "isActive" | "registrationStatus">,
+    userData: Omit<
+      StoredUser,
+      "id" | "createdAt" | "isActive" | "registrationStatus"
+    >,
   ) => Promise<StoredUser>;
   getUsers: () => Promise<StoredUser[]>;
   getPendingRegistrations: () => Promise<PendingRegistration[]>;
@@ -195,19 +198,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     if (!foundUser) {
-      return { success: false, requires2FA: false, requires2FASetup: false, error: "Ungueltige Anmeldedaten" };
+      return {
+        success: false,
+        requires2FA: false,
+        requires2FASetup: false,
+        error: "Ungueltige Anmeldedaten",
+      };
     }
 
     if (!foundUser.isActive) {
-      return { success: false, requires2FA: false, requires2FASetup: false, error: "Konto ist deaktiviert" };
+      return {
+        success: false,
+        requires2FA: false,
+        requires2FASetup: false,
+        error: "Konto ist deaktiviert",
+      };
     }
 
     if (foundUser.registrationStatus === "pending") {
-      return { success: false, requires2FA: false, requires2FASetup: false, error: "Registrierung noch nicht freigegeben" };
+      return {
+        success: false,
+        requires2FA: false,
+        requires2FASetup: false,
+        error: "Registrierung noch nicht freigegeben",
+      };
     }
 
     if (foundUser.registrationStatus === "rejected") {
-      return { success: false, requires2FA: false, requires2FASetup: false, error: "Registrierung wurde abgelehnt" };
+      return {
+        success: false,
+        requires2FA: false,
+        requires2FASetup: false,
+        error: "Registrierung wurde abgelehnt",
+      };
     }
 
     const user: User = {
@@ -294,7 +317,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return true;
   };
 
-  const setup2FA = async (method: TwoFactorMethod): Promise<TwoFASetupResult> => {
+  const setup2FA = async (
+    method: TwoFactorMethod,
+  ): Promise<TwoFASetupResult> => {
     if (!pendingUser) return { success: false };
 
     const secret = generateTOTPSecret();
@@ -402,7 +427,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const addUser = async (
-    userData: Omit<StoredUser, "id" | "createdAt" | "isActive" | "registrationStatus">,
+    userData: Omit<
+      StoredUser,
+      "id" | "createdAt" | "isActive" | "registrationStatus"
+    >,
   ): Promise<StoredUser> => {
     const newUser: StoredUser = {
       ...userData,
@@ -424,7 +452,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const getPendingRegistrations = async (): Promise<PendingRegistration[]> => {
-    return pendingRegistrationsRef.current.filter((r) => r.status === "pending");
+    return pendingRegistrationsRef.current.filter(
+      (r) => r.status === "pending",
+    );
   };
 
   const approveRegistration = async (
@@ -459,8 +489,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await AsyncStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
 
     // Update registration status
-    pendingRegistrationsRef.current = pendingRegistrationsRef.current.map((r) =>
-      r.id === registrationId ? { ...r, status: "approved" as const } : r,
+    pendingRegistrationsRef.current = pendingRegistrationsRef.current.map(
+      (r) =>
+        r.id === registrationId ? { ...r, status: "approved" as const } : r,
     );
     await AsyncStorage.setItem(
       PENDING_REGISTRATIONS_KEY,
@@ -469,8 +500,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const rejectRegistration = async (registrationId: string): Promise<void> => {
-    pendingRegistrationsRef.current = pendingRegistrationsRef.current.map((r) =>
-      r.id === registrationId ? { ...r, status: "rejected" as const } : r,
+    pendingRegistrationsRef.current = pendingRegistrationsRef.current.map(
+      (r) =>
+        r.id === registrationId ? { ...r, status: "rejected" as const } : r,
     );
     await AsyncStorage.setItem(
       PENDING_REGISTRATIONS_KEY,

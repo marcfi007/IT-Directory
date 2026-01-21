@@ -84,6 +84,8 @@ const DEMO_MARKETS: Market[] = [
     city: "Koeln",
     parkingInfo: "Parkplaetze im Hinterhof",
     serverLocation: "Dachgeschoss Technikraum",
+    kvFlag: true,
+    kvReason: "Haeufige Fehlbedienung durch Marktpersonal",
     createdAt: "2024-01-08T08:00:00Z",
     updatedAt: "2024-01-08T08:00:00Z",
     createdBy: "3",

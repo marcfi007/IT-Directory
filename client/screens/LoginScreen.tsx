@@ -25,7 +25,15 @@ type ScreenMode = "login" | "register" | "2fa" | "2fa-setup";
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
-  const { login, verify2FA, register, setup2FA, send2FACode, pendingUser, requires2FASetup } = useAuth();
+  const {
+    login,
+    verify2FA,
+    register,
+    setup2FA,
+    send2FACode,
+    pendingUser,
+    requires2FASetup,
+  } = useAuth();
 
   const [screenMode, setScreenMode] = useState<ScreenMode>("login");
   const [email, setEmail] = useState("");
@@ -33,7 +41,8 @@ export default function LoginScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [twoFactorCode, setTwoFactorCode] = useState("");
-  const [selected2FAMethod, setSelected2FAMethod] = useState<TwoFactorMethod>("email");
+  const [selected2FAMethod, setSelected2FAMethod] =
+    useState<TwoFactorMethod>("email");
   const [totpSecret, setTotpSecret] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -195,11 +204,7 @@ export default function LoginScreen() {
         </ThemedText>
       ) : null}
 
-      <Button
-        onPress={handleLogin}
-        disabled={isLoading}
-        style={styles.button}
-      >
+      <Button onPress={handleLogin} disabled={isLoading} style={styles.button}>
         {isLoading ? (
           <ActivityIndicator color="#FFFFFF" size="small" />
         ) : (
@@ -207,17 +212,38 @@ export default function LoginScreen() {
         )}
       </Button>
 
-      <Pressable
-        onPress={() => {
-          setScreenMode("register");
-          setError("");
-        }}
-        style={styles.linkButton}
-      >
-        <ThemedText style={{ color: theme.primary }}>
-          Noch kein Konto? Registrieren
-        </ThemedText>
-      </Pressable>
+      <View style={styles.registerSection}>
+        <View style={[styles.dividerContainer]}>
+          <View style={[styles.divider, { backgroundColor: theme.border }]} />
+          <ThemedText
+            style={[styles.dividerText, { color: theme.textSecondary }]}
+          >
+            oder
+          </ThemedText>
+          <View style={[styles.divider, { backgroundColor: theme.border }]} />
+        </View>
+
+        <Pressable
+          onPress={() => {
+            setScreenMode("register");
+            setError("");
+          }}
+          style={[
+            styles.registerButton,
+            {
+              borderColor: theme.primary,
+              backgroundColor: theme.primary + "10",
+            },
+          ]}
+        >
+          <Feather name="user-plus" size={18} color={theme.primary} />
+          <ThemedText
+            style={[styles.registerButtonText, { color: theme.primary }]}
+          >
+            Neues Konto registrieren
+          </ThemedText>
+        </Pressable>
+      </View>
 
       <View
         style={[
@@ -245,16 +271,12 @@ export default function LoginScreen() {
   const renderRegister = () => (
     <View style={styles.formContainer}>
       <View
-        style={[
-          styles.infoBadge,
-          { backgroundColor: theme.primary + "15" },
-        ]}
+        style={[styles.infoBadge, { backgroundColor: theme.primary + "15" }]}
       >
         <Feather name="info" size={16} color={theme.primary} />
-        <ThemedText
-          style={[styles.infoText, { color: theme.primary }]}
-        >
-          Nach der Registrierung muss ein Administrator Ihr Konto freigeben. 2FA ist fuer alle Benutzer verpflichtend.
+        <ThemedText style={[styles.infoText, { color: theme.primary }]}>
+          Nach der Registrierung muss ein Administrator Ihr Konto freigeben. 2FA
+          ist fuer alle Benutzer verpflichtend.
         </ThemedText>
       </View>
 
@@ -302,7 +324,12 @@ export default function LoginScreen() {
       ) : null}
 
       {successMessage ? (
-        <View style={[styles.successBox, { backgroundColor: theme.verified + "15" }]}>
+        <View
+          style={[
+            styles.successBox,
+            { backgroundColor: theme.verified + "15" },
+          ]}
+        >
           <Feather name="check-circle" size={16} color={theme.verified} />
           <ThemedText style={[styles.successText, { color: theme.verified }]}>
             {successMessage}
@@ -339,9 +366,7 @@ export default function LoginScreen() {
         ]}
       >
         <Feather name="shield" size={18} color={theme.warning} />
-        <ThemedText
-          style={[styles.twoFactorText, { color: theme.warning }]}
-        >
+        <ThemedText style={[styles.twoFactorText, { color: theme.warning }]}>
           2FA-Einrichtung erforderlich
         </ThemedText>
       </View>
@@ -349,29 +374,46 @@ export default function LoginScreen() {
       <ThemedText
         style={[styles.twoFactorInfo, { color: theme.textSecondary }]}
       >
-        Fuer Ihre Sicherheit ist die 2-Faktor-Authentifizierung verpflichtend. Waehlen Sie Ihre bevorzugte Methode:
+        Fuer Ihre Sicherheit ist die 2-Faktor-Authentifizierung verpflichtend.
+        Waehlen Sie Ihre bevorzugte Methode:
       </ThemedText>
 
       <Pressable
         onPress={() => setSelected2FAMethod("email")}
         style={[
           styles.methodOption,
-          { 
-            borderColor: selected2FAMethod === "email" ? theme.primary : theme.border,
-            backgroundColor: selected2FAMethod === "email" ? theme.primary + "10" : "transparent",
+          {
+            borderColor:
+              selected2FAMethod === "email" ? theme.primary : theme.border,
+            backgroundColor:
+              selected2FAMethod === "email"
+                ? theme.primary + "10"
+                : "transparent",
           },
         ]}
       >
-        <Feather 
-          name="mail" 
-          size={24} 
-          color={selected2FAMethod === "email" ? theme.primary : theme.textSecondary} 
+        <Feather
+          name="mail"
+          size={24}
+          color={
+            selected2FAMethod === "email" ? theme.primary : theme.textSecondary
+          }
         />
         <View style={styles.methodTextContainer}>
-          <ThemedText style={[styles.methodTitle, { color: selected2FAMethod === "email" ? theme.primary : theme.text }]}>
+          <ThemedText
+            style={[
+              styles.methodTitle,
+              {
+                color:
+                  selected2FAMethod === "email" ? theme.primary : theme.text,
+              },
+            ]}
+          >
             E-Mail
           </ThemedText>
-          <ThemedText style={[styles.methodDescription, { color: theme.textSecondary }]}>
+          <ThemedText
+            style={[styles.methodDescription, { color: theme.textSecondary }]}
+          >
             Code per E-Mail erhalten
           </ThemedText>
         </View>
@@ -384,22 +426,38 @@ export default function LoginScreen() {
         onPress={() => setSelected2FAMethod("totp")}
         style={[
           styles.methodOption,
-          { 
-            borderColor: selected2FAMethod === "totp" ? theme.primary : theme.border,
-            backgroundColor: selected2FAMethod === "totp" ? theme.primary + "10" : "transparent",
+          {
+            borderColor:
+              selected2FAMethod === "totp" ? theme.primary : theme.border,
+            backgroundColor:
+              selected2FAMethod === "totp"
+                ? theme.primary + "10"
+                : "transparent",
           },
         ]}
       >
-        <Feather 
-          name="smartphone" 
-          size={24} 
-          color={selected2FAMethod === "totp" ? theme.primary : theme.textSecondary} 
+        <Feather
+          name="smartphone"
+          size={24}
+          color={
+            selected2FAMethod === "totp" ? theme.primary : theme.textSecondary
+          }
         />
         <View style={styles.methodTextContainer}>
-          <ThemedText style={[styles.methodTitle, { color: selected2FAMethod === "totp" ? theme.primary : theme.text }]}>
+          <ThemedText
+            style={[
+              styles.methodTitle,
+              {
+                color:
+                  selected2FAMethod === "totp" ? theme.primary : theme.text,
+              },
+            ]}
+          >
             Authenticator App
           </ThemedText>
-          <ThemedText style={[styles.methodDescription, { color: theme.textSecondary }]}>
+          <ThemedText
+            style={[styles.methodDescription, { color: theme.textSecondary }]}
+          >
             Google/Microsoft Authenticator, etc.
           </ThemedText>
         </View>
@@ -443,16 +501,21 @@ export default function LoginScreen() {
         ]}
       >
         <Feather name="shield" size={18} color={theme.primary} />
-        <ThemedText
-          style={[styles.twoFactorText, { color: theme.primary }]}
-        >
+        <ThemedText style={[styles.twoFactorText, { color: theme.primary }]}>
           2-Faktor-Authentifizierung
         </ThemedText>
       </View>
 
       {totpSecret ? (
-        <View style={[styles.secretBox, { backgroundColor: theme.backgroundSecondary }]}>
-          <ThemedText style={[styles.secretLabel, { color: theme.textSecondary }]}>
+        <View
+          style={[
+            styles.secretBox,
+            { backgroundColor: theme.backgroundSecondary },
+          ]}
+        >
+          <ThemedText
+            style={[styles.secretLabel, { color: theme.textSecondary }]}
+          >
             Ihr TOTP-Secret (fuer Authenticator App):
           </ThemedText>
           <ThemedText style={[styles.secretValue, { color: theme.text }]}>
@@ -464,7 +527,7 @@ export default function LoginScreen() {
       <ThemedText
         style={[styles.twoFactorInfo, { color: theme.textSecondary }]}
       >
-        {pendingUser?.twoFactorMethod === "email" 
+        {pendingUser?.twoFactorMethod === "email"
           ? "Ein 6-stelliger Code wurde an Ihre E-Mail gesendet."
           : "Geben Sie den Code aus Ihrer Authenticator-App ein."}
       </ThemedText>
@@ -487,7 +550,12 @@ export default function LoginScreen() {
       ) : null}
 
       {successMessage ? (
-        <View style={[styles.successBox, { backgroundColor: theme.verified + "15" }]}>
+        <View
+          style={[
+            styles.successBox,
+            { backgroundColor: theme.verified + "15" },
+          ]}
+        >
           <Feather name="check-circle" size={16} color={theme.verified} />
           <ThemedText style={[styles.successText, { color: theme.verified }]}>
             {successMessage}
@@ -528,7 +596,8 @@ export default function LoginScreen() {
         <ThemedText
           style={[styles.demoHintText, { color: theme.textSecondary }]}
         >
-          Demo: Der Code wird in der Konsole angezeigt (in Produktion per E-Mail/App)
+          Demo: Der Code wird in der Konsole angezeigt (in Produktion per
+          E-Mail/App)
         </ThemedText>
       </View>
     </View>
@@ -557,7 +626,9 @@ export default function LoginScreen() {
             IT-Markt Verzeichnis
           </ThemedText>
           <ThemedText style={[styles.subtitle, { color: theme.textSecondary }]}>
-            {screenMode === "register" ? "Neues Konto erstellen" : "Servicetechniker Portal"}
+            {screenMode === "register"
+              ? "Neues Konto erstellen"
+              : "Servicetechniker Portal"}
           </ThemedText>
         </View>
 
@@ -692,6 +763,36 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: Spacing.lg,
     padding: Spacing.sm,
+  },
+  registerSection: {
+    marginTop: Spacing["2xl"],
+  },
+  dividerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: Spacing.lg,
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+  },
+  dividerText: {
+    marginHorizontal: Spacing.md,
+    fontSize: 13,
+  },
+  registerButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    borderWidth: 2,
+    gap: Spacing.sm,
+  },
+  registerButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
   },
   demoHint: {
     marginTop: Spacing["2xl"],

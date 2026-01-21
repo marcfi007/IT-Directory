@@ -58,11 +58,15 @@ export default function MarketDetailScreen() {
   const [editContactPerson, setEditContactPerson] = useState("");
   const [editParkingInfo, setEditParkingInfo] = useState("");
   const [editEgateAccess, setEditEgateAccess] = useState("");
-  const [editEgateBarcode, setEditEgateBarcode] = useState("");
+  const [editKassenBarcode, setEditKassenBarcode] = useState("");
+  const [editExitGateBarcode, setEditExitGateBarcode] = useState("");
   const [editServerLocation, setEditServerLocation] = useState("");
   const [editSwitchRouterLocation, setEditSwitchRouterLocation] = useState("");
   const [editSpecialNotes, setEditSpecialNotes] = useState("");
   const [editFreeTextNotes, setEditFreeTextNotes] = useState("");
+  const [editKvFlag, setEditKvFlag] = useState(false);
+  const [editKvReason, setEditKvReason] = useState("");
+  const [showKvModal, setShowKvModal] = useState(false);
 
   const isAdmin = user?.role === "admin";
 
@@ -106,11 +110,14 @@ export default function MarketDetailScreen() {
     setEditContactPerson(market.contactPerson || "");
     setEditParkingInfo(market.parkingInfo || "");
     setEditEgateAccess(market.egateAccess || "");
-    setEditEgateBarcode(market.egateBarcode || "");
+    setEditKassenBarcode(market.kassenBarcode || "");
+    setEditExitGateBarcode(market.exitGateBarcode || "");
     setEditServerLocation(market.serverLocation || "");
     setEditSwitchRouterLocation(market.switchRouterLocation || "");
     setEditSpecialNotes(market.specialNotes || "");
     setEditFreeTextNotes(market.freeTextNotes || "");
+    setEditKvFlag(market.kvFlag || false);
+    setEditKvReason(market.kvReason || "");
     setShowEditMarketModal(true);
   };
 
@@ -133,17 +140,58 @@ export default function MarketDetailScreen() {
         contactPerson: editContactPerson.trim() || undefined,
         parkingInfo: editParkingInfo.trim() || undefined,
         egateAccess: editEgateAccess.trim() || undefined,
-        egateBarcode: editEgateBarcode.trim() || undefined,
+        kassenBarcode: editKassenBarcode.trim() || undefined,
+        exitGateBarcode: editExitGateBarcode.trim() || undefined,
         serverLocation: editServerLocation.trim() || undefined,
         switchRouterLocation: editSwitchRouterLocation.trim() || undefined,
         specialNotes: editSpecialNotes.trim() || undefined,
         freeTextNotes: editFreeTextNotes.trim() || undefined,
+        kvFlag: editKvFlag,
+        kvReason: editKvFlag ? editKvReason.trim() : undefined,
       },
       user.id,
       user.name,
     );
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setShowEditMarketModal(false);
+  };
+
+  const handleToggleKv = async () => {
+    if (!user || !market) return;
+
+    if (market.kvFlag) {
+      // Remove KV flag
+      await updateMarket(
+        market.id,
+        {
+          kvFlag: false,
+          kvReason: undefined,
+        },
+        user.id,
+        user.name,
+      );
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } else {
+      // Show modal to set KV reason
+      setEditKvReason("");
+      setShowKvModal(true);
+    }
+  };
+
+  const handleSaveKv = async () => {
+    if (!user || !market) return;
+
+    await updateMarket(
+      market.id,
+      {
+        kvFlag: true,
+        kvReason: editKvReason.trim() || "Kundenverschulden pruefen",
+      },
+      user.id,
+      user.name,
+    );
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setShowKvModal(false);
   };
 
   const handleDeleteMarket = async () => {
@@ -200,6 +248,18 @@ export default function MarketDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
+          {market.kvFlag ? (
+            <Pressable
+              onPress={isAdmin ? handleToggleKv : undefined}
+              style={[styles.kvBadge, { backgroundColor: theme.warning }]}
+            >
+              <Feather name="alert-triangle" size={14} color="#FFFFFF" />
+              <ThemedText style={styles.kvBadgeText}>
+                KV-Pruefung: {market.kvReason || "Kundenverschulden pruefen"}
+              </ThemedText>
+              {isAdmin ? <Feather name="x" size={14} color="#FFFFFF" /> : null}
+            </Pressable>
+          ) : null}
           <View style={styles.headerTopRow}>
             <View style={styles.wawiRow}>
               <ThemedText
@@ -213,6 +273,21 @@ export default function MarketDetailScreen() {
             </View>
             {isAdmin ? (
               <View style={styles.adminActions}>
+                {!market.kvFlag ? (
+                  <Pressable
+                    onPress={handleToggleKv}
+                    style={[
+                      styles.adminButton,
+                      { backgroundColor: theme.warning + "15" },
+                    ]}
+                  >
+                    <Feather
+                      name="alert-triangle"
+                      size={16}
+                      color={theme.warning}
+                    />
+                  </Pressable>
+                ) : null}
                 <Pressable
                   onPress={handleOpenEditMarket}
                   style={[
@@ -397,7 +472,9 @@ export default function MarketDetailScreen() {
           {market.barcodeInfo ? (
             <InfoRow label="Scanner-Info" value={market.barcodeInfo} copyable />
           ) : null}
-          {!market.kassenBarcode && !market.exitGateBarcode && !market.barcodeInfo ? (
+          {!market.kassenBarcode &&
+          !market.exitGateBarcode &&
+          !market.barcodeInfo ? (
             <ThemedText style={[styles.noData, { color: theme.textSecondary }]}>
               Keine Barcode-Infos vorhanden
             </ThemedText>
@@ -768,10 +845,18 @@ export default function MarketDetailScreen() {
               />
 
               <Input
-                label="eGate-Barcode"
-                placeholder="z.B. MM1006MITTE"
-                value={editEgateBarcode}
-                onChangeText={setEditEgateBarcode}
+                label="Kassen-Barcode"
+                placeholder="z.B. KASSE2001ALEX"
+                value={editKassenBarcode}
+                onChangeText={setEditKassenBarcode}
+                leftIcon="maximize"
+              />
+
+              <Input
+                label="ExitGate-Barcode"
+                placeholder="z.B. EXIT2001ALEX"
+                value={editExitGateBarcode}
+                onChangeText={setEditExitGateBarcode}
                 leftIcon="maximize"
               />
 
@@ -889,6 +974,85 @@ export default function MarketDetailScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* KV (Kundenverschulden) Modal - Admin Only */}
+      <Modal
+        visible={showKvModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowKvModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View
+            style={[
+              styles.modalContent,
+              { backgroundColor: theme.cardBackground },
+            ]}
+          >
+            <View style={styles.modalHeader}>
+              <ThemedText type="h3">KV-Markierung setzen</ThemedText>
+              <Pressable
+                onPress={() => setShowKvModal(false)}
+                style={styles.modalClose}
+              >
+                <Feather name="x" size={24} color={theme.text} />
+              </Pressable>
+            </View>
+
+            <View
+              style={[
+                styles.infoBox,
+                { backgroundColor: theme.warning + "15" },
+              ]}
+            >
+              <Feather name="alert-triangle" size={16} color={theme.warning} />
+              <ThemedText
+                style={[styles.infoBoxText, { color: theme.warning }]}
+              >
+                Dieser Markt wird als &quot;KV-Pruefung erforderlich&quot;
+                markiert. Techniker werden darauf hingewiesen, bei Problemen
+                besonders auf moegliches Kundenverschulden zu achten.
+              </ThemedText>
+            </View>
+
+            <ThemedText
+              style={[styles.inputLabel, { color: theme.textSecondary }]}
+            >
+              Grund fuer KV-Markierung
+            </ThemedText>
+            <TextInput
+              style={[
+                styles.modalInput,
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  color: theme.text,
+                  borderColor: theme.border,
+                },
+              ]}
+              value={editKvReason}
+              onChangeText={setEditKvReason}
+              placeholder="z.B. Haeufige Fehlbedienung, frech, unkooperativ..."
+              placeholderTextColor={theme.textSecondary}
+              autoFocus
+            />
+
+            <View style={styles.modalButtons}>
+              <Pressable
+                onPress={() => setShowKvModal(false)}
+                style={[styles.cancelButton, { borderColor: theme.border }]}
+              >
+                <ThemedText style={{ color: theme.text }}>Abbrechen</ThemedText>
+              </Pressable>
+              <Button
+                onPress={handleSaveKv}
+                style={[styles.saveButton, { backgroundColor: theme.warning }]}
+              >
+                KV markieren
+              </Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -906,6 +1070,21 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: Spacing["2xl"],
+  },
+  kvBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    marginBottom: Spacing.md,
+    gap: Spacing.sm,
+  },
+  kvBadgeText: {
+    flex: 1,
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "600",
   },
   headerTopRow: {
     flexDirection: "row",

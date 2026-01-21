@@ -14,11 +14,13 @@ Eine mobile App für IT-Servicetechniker zur Verwaltung von Markt-Informationen 
 - [Systemvoraussetzungen](#systemvoraussetzungen)
 - [Installation](#installation)
 - [APK Build (Android)](#apk-build-android)
+- [Produktionsmodus](#produktionsmodus)
 - [Server-Konfiguration](#server-konfiguration)
 - [Demo-Zugänge](#demo-zugänge)
 - [Benutzerrollen & Berechtigungen](#benutzerrollen--berechtigungen)
 - [2-Faktor-Authentifizierung](#2-faktor-authentifizierung)
 - [Registrierung](#registrierung)
+- [KV-Funktion](#kv-funktion)
 - [Projektstruktur](#projektstruktur)
 - [Troubleshooting](#troubleshooting)
 
@@ -179,6 +181,79 @@ adb install app-release.apk
 
 # Oder: APK auf Gerät kopieren und dort öffnen
 ```
+
+## Produktionsmodus
+
+### Schritt-für-Schritt Anleitung
+
+#### 1. Entwicklungs- vs. Produktionsmodus
+
+| Aspekt | Entwicklung | Produktion |
+|--------|-------------|------------|
+| Daten | Demo-Daten in AsyncStorage | Backend mit PostgreSQL |
+| 2FA Codes | In Konsole angezeigt | Per E-Mail/Authenticator App |
+| APK Build | Development Profile | Production Profile |
+| API | Lokal (localhost:5000) | Eigener Server |
+
+#### 2. Auf Produktion umstellen
+
+**Schritt 1: Umgebungsvariablen konfigurieren**
+
+Erstellen Sie `.env.local`:
+
+```env
+# Produktion API (Ihr Server)
+EXPO_PUBLIC_API_URL=https://api.ihre-domain.de
+
+# Datenbank
+DATABASE_URL=postgresql://user:password@db-server:5432/itmarkt
+
+# Authentifizierung
+JWT_SECRET=mindestens-32-zeichen-langer-geheimer-schluessel
+
+# E-Mail für 2FA
+SMTP_HOST=smtp.ihre-domain.de
+SMTP_PORT=587
+SMTP_USER=noreply@ihre-domain.de
+SMTP_PASS=ihr-smtp-passwort
+SMTP_FROM="IT-Markt <noreply@ihre-domain.de>"
+```
+
+**Schritt 2: Backend bereitstellen**
+
+```bash
+# Backend bauen
+npm run server:build
+
+# Mit Docker deployen
+docker build -t itmarkt-api .
+docker run -d -p 5000:5000 --env-file .env.local itmarkt-api
+```
+
+**Schritt 3: Produktions-APK erstellen**
+
+```bash
+# EAS Build für Produktion
+eas build --platform android --profile production
+```
+
+**Schritt 4: Demo-Benutzer entfernen**
+
+Nach dem ersten Start sollten Sie:
+1. Eigenen Admin-Account anlegen
+2. Demo-Accounts deaktivieren oder löschen
+3. 2FA mit echtem E-Mail-Server testen
+
+#### 3. Checkliste für Produktion
+
+- [ ] `.env.local` mit echten Werten erstellt
+- [ ] PostgreSQL-Datenbank eingerichtet
+- [ ] SMTP-Server für 2FA konfiguriert
+- [ ] SSL-Zertifikat für API-Server
+- [ ] Produktions-APK mit `production` Profile erstellt
+- [ ] Demo-Accounts entfernt
+- [ ] Backup-Strategie für Datenbank
+- [ ] Monitoring eingerichtet
 
 ## Server-Konfiguration
 
@@ -355,6 +430,40 @@ In der Entwicklungsumgebung werden die Codes in der Konsole angezeigt:
 3. Anfrage prüfen
 4. Rolle zuweisen (Admin/Entwickler/Techniker)
 5. Freigeben oder Ablehnen
+
+## KV-Funktion
+
+Die **KV-Funktion (Kundenverschulden)** ermöglicht es Administratoren, Märkte zu markieren, bei denen besondere Aufmerksamkeit erforderlich ist.
+
+### Wann verwenden?
+
+- Markt zeigt unkooperatives Verhalten
+- Häufige Fehlbedienung oder Beschädigung von Geräten
+- Verdacht auf absichtliche Schäden
+- Besondere Dokumentationspflicht bei Service-Einsätzen
+
+### KV-Markierung setzen (nur Admin)
+
+1. Markt-Detailansicht öffnen
+2. Auf das Warnsymbol (⚠️) in der Header-Leiste klicken
+3. Grund für die KV-Markierung eingeben (z.B. "Häufige Fehlbedienung", "Unkooperativ")
+4. "KV markieren" bestätigen
+
+### KV-Anzeige
+
+- Markierte Märkte zeigen ein **gelbes Banner** mit dem KV-Grund
+- Techniker werden beim Öffnen des Markts sofort auf die Markierung hingewiesen
+- Empfehlung: Bei Problemen genau dokumentieren und auf Kundenverschulden prüfen
+
+### KV-Markierung entfernen (nur Admin)
+
+1. Markt-Detailansicht öffnen
+2. Auf das KV-Banner klicken
+3. Markierung wird entfernt
+
+### KV im Edit-Modal
+
+Beim Bearbeiten eines Markts kann die KV-Markierung auch im Edit-Dialog gesetzt/entfernt werden.
 
 ## Projektstruktur
 

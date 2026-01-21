@@ -24,7 +24,13 @@ import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMarketContext } from "@/contexts/MarketContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
-import { MarketInfo, ActivityLog, StoredUser, UserRole, PendingRegistration } from "@/types";
+import {
+  MarketInfo,
+  ActivityLog,
+  StoredUser,
+  UserRole,
+  PendingRegistration,
+} from "@/types";
 
 type TabType = "pending" | "registrations" | "users" | "logs";
 
@@ -49,7 +55,15 @@ export default function AdminPanelScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const { theme } = useTheme();
-  const { user, getUsers, addUser, toggleUserActive, getPendingRegistrations, approveRegistration, rejectRegistration } = useAuth();
+  const {
+    user,
+    getUsers,
+    addUser,
+    toggleUserActive,
+    getPendingRegistrations,
+    approveRegistration,
+    rejectRegistration,
+  } = useAuth();
   const {
     getPendingInfos,
     activityLogs,
@@ -61,10 +75,13 @@ export default function AdminPanelScreen() {
 
   const [activeTab, setActiveTab] = useState<TabType>("pending");
   const [users, setUsers] = useState<StoredUser[]>([]);
-  const [pendingRegistrations, setPendingRegistrations] = useState<PendingRegistration[]>([]);
+  const [pendingRegistrations, setPendingRegistrations] = useState<
+    PendingRegistration[]
+  >([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showApproveModal, setShowApproveModal] = useState(false);
-  const [selectedRegistration, setSelectedRegistration] = useState<PendingRegistration | null>(null);
+  const [selectedRegistration, setSelectedRegistration] =
+    useState<PendingRegistration | null>(null);
   const [selectedRole, setSelectedRole] = useState<UserRole>("user");
   const [newUserName, setNewUserName] = useState("");
   const [newUserEmail, setNewUserEmail] = useState("");
@@ -130,7 +147,9 @@ export default function AdminPanelScreen() {
     setIsLoading(false);
   };
 
-  const handleRejectRegistration = async (registration: PendingRegistration) => {
+  const handleRejectRegistration = async (
+    registration: PendingRegistration,
+  ) => {
     if (!user) return;
     await rejectRegistration(registration.id);
     await addActivityLog({
@@ -383,13 +402,18 @@ export default function AdminPanelScreen() {
       >
         <View style={styles.pendingHeader}>
           <View
-            style={[styles.categoryBadge, { backgroundColor: theme.warning + "15" }]}
+            style={[
+              styles.categoryBadge,
+              { backgroundColor: theme.warning + "15" },
+            ]}
           >
             <ThemedText style={[styles.categoryText, { color: theme.warning }]}>
               REGISTRIERUNG
             </ThemedText>
           </View>
-          <ThemedText style={[styles.pendingDate, { color: theme.textSecondary }]}>
+          <ThemedText
+            style={[styles.pendingDate, { color: theme.textSecondary }]}
+          >
             {new Date(item.requestedAt).toLocaleDateString("de-DE")}
           </ThemedText>
         </View>
@@ -398,25 +422,35 @@ export default function AdminPanelScreen() {
           <ThemedText type="h4" style={styles.registrationName}>
             {item.name}
           </ThemedText>
-          <ThemedText style={[styles.registrationEmail, { color: theme.textSecondary }]}>
+          <ThemedText
+            style={[styles.registrationEmail, { color: theme.textSecondary }]}
+          >
             {item.email}
           </ThemedText>
         </View>
 
         <View style={styles.pendingFooter}>
-          <ThemedText style={[styles.pendingAuthor, { color: theme.textSecondary }]}>
+          <ThemedText
+            style={[styles.pendingAuthor, { color: theme.textSecondary }]}
+          >
             Warte auf Freigabe
           </ThemedText>
           <View style={styles.pendingActions}>
             <Pressable
               onPress={() => handleRejectRegistration(item)}
-              style={[styles.actionButton, { backgroundColor: theme.error + "15" }]}
+              style={[
+                styles.actionButton,
+                { backgroundColor: theme.error + "15" },
+              ]}
             >
               <Feather name="x" size={18} color={theme.error} />
             </Pressable>
             <Pressable
               onPress={() => handleOpenApproveModal(item)}
-              style={[styles.actionButton, { backgroundColor: theme.verified + "15" }]}
+              style={[
+                styles.actionButton,
+                { backgroundColor: theme.verified + "15" },
+              ]}
             >
               <Feather name="check" size={18} color={theme.verified} />
             </Pressable>
@@ -505,11 +539,12 @@ export default function AdminPanelScreen() {
       <View style={[styles.tabBar, { paddingTop: headerHeight + Spacing.md }]}>
         {TABS.map((tab) => {
           const isActive = activeTab === tab.key;
-          const count = tab.key === "pending" 
-            ? pendingInfos.length 
-            : tab.key === "registrations" 
-              ? pendingRegistrations.length 
-              : undefined;
+          const count =
+            tab.key === "pending"
+              ? pendingInfos.length
+              : tab.key === "registrations"
+                ? pendingRegistrations.length
+                : undefined;
 
           return (
             <Pressable
@@ -733,9 +768,16 @@ export default function AdminPanelScreen() {
 
             {selectedRegistration ? (
               <>
-                <View style={[styles.registrationPreview, { backgroundColor: theme.backgroundSecondary }]}>
+                <View
+                  style={[
+                    styles.registrationPreview,
+                    { backgroundColor: theme.backgroundSecondary },
+                  ]}
+                >
                   <ThemedText type="h4">{selectedRegistration.name}</ThemedText>
-                  <ThemedText style={{ color: theme.textSecondary }}>{selectedRegistration.email}</ThemedText>
+                  <ThemedText style={{ color: theme.textSecondary }}>
+                    {selectedRegistration.email}
+                  </ThemedText>
                 </View>
 
                 <ThemedText
@@ -767,7 +809,9 @@ export default function AdminPanelScreen() {
                           styles.roleOptionText,
                           {
                             color:
-                              selectedRole === option.value ? "#FFFFFF" : theme.text,
+                              selectedRole === option.value
+                                ? "#FFFFFF"
+                                : theme.text,
                           },
                         ]}
                       >
@@ -796,7 +840,9 @@ export default function AdminPanelScreen() {
                     onPress={() => setShowApproveModal(false)}
                     style={[styles.cancelButton, { borderColor: theme.border }]}
                   >
-                    <ThemedText style={{ color: theme.text }}>Abbrechen</ThemedText>
+                    <ThemedText style={{ color: theme.text }}>
+                      Abbrechen
+                    </ThemedText>
                   </Pressable>
                   <Button
                     onPress={handleApproveRegistration}
