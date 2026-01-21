@@ -1,16 +1,16 @@
 {
   "expo": {
-    "name": "IT-Markt Verzeichnis",
-    "slug": "it-markt-verzeichnis",
+    "name": "Techniker Verzeichnissapp",
+    "slug": "technikerverzeichnissapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "itmarkt",
+    "scheme": "technikerverzeichnissapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "de.itmarkt.verzeichnis",
+      "bundleIdentifier": "com.technikerverzeichnissapp.app",
       "infoPlist": {
         "NSCameraUsageDescription": "Diese App benoetigt Zugriff auf die Kamera, um QR-Codes und Barcodes zu scannen."
       }
@@ -22,8 +22,10 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "de.itmarkt.verzeichnis",
-      "permissions": ["android.permission.CAMERA"]
+      "package": "com.technikerverzeichnissapp.app",
+      "permissions": [
+        "android.permission.CAMERA"
+      ]
     },
     "web": {
       "output": "single",
