@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Image, Pressable, ActivityIndicator } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Image,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { ThemedText } from "@/components/ThemedText";
@@ -15,7 +21,7 @@ export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const { login, verify2FA } = useAuth();
-  
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [twoFactorCode, setTwoFactorCode] = useState("");
@@ -34,18 +40,21 @@ export default function LoginScreen() {
     setError("");
 
     const success = await login(email, password);
-    
+
     if (success) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       const demoUser = email.toLowerCase();
-      if (demoUser === "admin@rewe-group.de" || demoUser === "dev@rewe-group.de") {
+      if (
+        demoUser === "admin@rewe-group.de" ||
+        demoUser === "dev@rewe-group.de"
+      ) {
         setShowTwoFactor(true);
       }
     } else {
       setError("Ungueltige Anmeldedaten");
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
-    
+
     setIsLoading(false);
   };
 
@@ -60,12 +69,12 @@ export default function LoginScreen() {
     setError("");
 
     const success = await verify2FA(twoFactorCode);
-    
+
     if (!success) {
       setError("Ungueltiger 2FA Code");
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
-    
+
     setIsLoading(false);
   };
 
@@ -81,7 +90,10 @@ export default function LoginScreen() {
         style={styles.scrollView}
         contentContainerStyle={[
           styles.content,
-          { paddingTop: insets.top + Spacing["4xl"], paddingBottom: insets.bottom + Spacing["2xl"] },
+          {
+            paddingTop: insets.top + Spacing["4xl"],
+            paddingBottom: insets.bottom + Spacing["2xl"],
+          },
         ]}
         keyboardShouldPersistTaps="handled"
       >
@@ -101,14 +113,24 @@ export default function LoginScreen() {
 
         {showTwoFactor ? (
           <View style={styles.formContainer}>
-            <View style={[styles.twoFactorBadge, { backgroundColor: theme.primary + "15" }]}>
-              <ThemedText style={[styles.twoFactorText, { color: theme.primary }]}>
+            <View
+              style={[
+                styles.twoFactorBadge,
+                { backgroundColor: theme.primary + "15" },
+              ]}
+            >
+              <ThemedText
+                style={[styles.twoFactorText, { color: theme.primary }]}
+              >
                 2-Faktor-Authentifizierung
               </ThemedText>
             </View>
-            
-            <ThemedText style={[styles.twoFactorInfo, { color: theme.textSecondary }]}>
-              Bitte geben Sie den 6-stelligen Code aus Ihrer Authenticator-App ein.
+
+            <ThemedText
+              style={[styles.twoFactorInfo, { color: theme.textSecondary }]}
+            >
+              Bitte geben Sie den 6-stelligen Code aus Ihrer Authenticator-App
+              ein.
             </ThemedText>
 
             <Input
@@ -128,7 +150,11 @@ export default function LoginScreen() {
               </ThemedText>
             ) : null}
 
-            <Button onPress={handleVerify2FA} disabled={isLoading} style={styles.button}>
+            <Button
+              onPress={handleVerify2FA}
+              disabled={isLoading}
+              style={styles.button}
+            >
               {isLoading ? (
                 <ActivityIndicator color="#FFFFFF" size="small" />
               ) : (
@@ -142,9 +168,16 @@ export default function LoginScreen() {
               </ThemedText>
             </Pressable>
 
-            <View style={[styles.demoHint, { backgroundColor: theme.backgroundSecondary }]}>
-              <ThemedText style={[styles.demoHintText, { color: theme.textSecondary }]}>
-                Demo: Code "123456" verwenden
+            <View
+              style={[
+                styles.demoHint,
+                { backgroundColor: theme.backgroundSecondary },
+              ]}
+            >
+              <ThemedText
+                style={[styles.demoHintText, { color: theme.textSecondary }]}
+              >
+                Demo: Code &quot;123456&quot; verwenden
               </ThemedText>
             </View>
           </View>
@@ -176,7 +209,11 @@ export default function LoginScreen() {
               </ThemedText>
             ) : null}
 
-            <Button onPress={handleLogin} disabled={isLoading} style={styles.button}>
+            <Button
+              onPress={handleLogin}
+              disabled={isLoading}
+              style={styles.button}
+            >
               {isLoading ? (
                 <ActivityIndicator color="#FFFFFF" size="small" />
               ) : (
@@ -184,11 +221,21 @@ export default function LoginScreen() {
               )}
             </Button>
 
-            <View style={[styles.demoHint, { backgroundColor: theme.backgroundSecondary }]}>
-              <ThemedText type="small" style={[styles.demoHintTitle, { color: theme.text }]}>
+            <View
+              style={[
+                styles.demoHint,
+                { backgroundColor: theme.backgroundSecondary },
+              ]}
+            >
+              <ThemedText
+                type="small"
+                style={[styles.demoHintTitle, { color: theme.text }]}
+              >
                 Demo-Zugaenge:
               </ThemedText>
-              <ThemedText style={[styles.demoHintText, { color: theme.textSecondary }]}>
+              <ThemedText
+                style={[styles.demoHintText, { color: theme.textSecondary }]}
+              >
                 admin@rewe-group.de / admin123{"\n"}
                 dev@rewe-group.de / dev123{"\n"}
                 tech@rewe-group.de / tech123

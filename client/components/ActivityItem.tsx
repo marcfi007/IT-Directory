@@ -12,7 +12,10 @@ interface ActivityItemProps {
 
 const ACTION_CONFIG: Record<
   ActivityLog["action"],
-  { icon: keyof typeof Feather.glyphMap; colorKey: "success" | "warning" | "error" | "primary" }
+  {
+    icon: keyof typeof Feather.glyphMap;
+    colorKey: "success" | "warning" | "error" | "primary";
+  }
 > = {
   login: { icon: "log-in", colorKey: "primary" },
   logout: { icon: "log-out", colorKey: "primary" },
@@ -42,7 +45,9 @@ export function ActivityItem({ log }: ActivityItemProps) {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.cardBackground }]}>
-      <View style={[styles.iconContainer, { backgroundColor: actionColor + "15" }]}>
+      <View
+        style={[styles.iconContainer, { backgroundColor: actionColor + "15" }]}
+      >
         <Feather name={config.icon} size={18} color={actionColor} />
       </View>
       <View style={styles.content}>
@@ -54,7 +59,9 @@ export function ActivityItem({ log }: ActivityItemProps) {
             {formatTime(log.timestamp)}
           </ThemedText>
         </View>
-        <ThemedText style={[styles.description, { color: theme.textSecondary }]}>
+        <ThemedText
+          style={[styles.description, { color: theme.textSecondary }]}
+        >
           {log.description}
         </ThemedText>
         {log.marketName ? (

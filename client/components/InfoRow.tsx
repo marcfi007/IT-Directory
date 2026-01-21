@@ -17,10 +17,10 @@ interface InfoRowProps {
   history?: { value: string; date: string; user: string }[];
 }
 
-export function InfoRow({ 
-  label, 
-  value, 
-  copyable = false, 
+export function InfoRow({
+  label,
+  value,
+  copyable = false,
   isEncrypted = false,
   onEdit,
   editable = false,
@@ -58,7 +58,7 @@ export function InfoRow({
         ) : null}
       </View>
       <Pressable
-        onPress={isEncrypted ? handleReveal : (copyable ? handleCopy : undefined)}
+        onPress={isEncrypted ? handleReveal : copyable ? handleCopy : undefined}
         style={styles.valueContainer}
       >
         <ThemedText style={styles.value} numberOfLines={2}>
@@ -70,17 +70,19 @@ export function InfoRow({
           </Pressable>
         ) : null}
         {isEncrypted ? (
-          <Feather 
-            name={isRevealed ? "unlock" : "lock"} 
-            size={16} 
-            color={isRevealed ? theme.verified : theme.encrypted} 
-            style={styles.copyIcon} 
+          <Feather
+            name={isRevealed ? "unlock" : "lock"}
+            size={16}
+            color={isRevealed ? theme.verified : theme.encrypted}
+            style={styles.copyIcon}
           />
         ) : null}
       </Pressable>
       {history.length > 0 ? (
         <View style={styles.historyContainer}>
-          <ThemedText style={[styles.historyLabel, { color: theme.textSecondary }]}>
+          <ThemedText
+            style={[styles.historyLabel, { color: theme.textSecondary }]}
+          >
             Verlauf:
           </ThemedText>
           {history.map((item, index) => (
@@ -88,7 +90,9 @@ export function InfoRow({
               <ThemedText style={[styles.historyValue, { color: theme.error }]}>
                 {item.value}
               </ThemedText>
-              <ThemedText style={[styles.historyMeta, { color: theme.textSecondary }]}>
+              <ThemedText
+                style={[styles.historyMeta, { color: theme.textSecondary }]}
+              >
                 {item.date} - {item.user}
               </ThemedText>
             </View>

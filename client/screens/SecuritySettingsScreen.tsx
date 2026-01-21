@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, ScrollView, Switch, Pressable, Modal, TextInput, Alert } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Switch,
+  Pressable,
+  Modal,
+  TextInput,
+  Alert,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -61,10 +70,16 @@ export default function SecuritySettingsScreen() {
     setBiometricAvailable(compatible && enrolled);
   };
 
-  const updateSetting = async (key: keyof SecuritySettings, value: boolean | number) => {
+  const updateSetting = async (
+    key: keyof SecuritySettings,
+    value: boolean | number,
+  ) => {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
-    await AsyncStorage.setItem(SECURITY_SETTINGS_KEY, JSON.stringify(newSettings));
+    await AsyncStorage.setItem(
+      SECURITY_SETTINGS_KEY,
+      JSON.stringify(newSettings),
+    );
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
@@ -85,7 +100,7 @@ export default function SecuritySettingsScreen() {
 
   const handleChangePassword = () => {
     setPasswordError("");
-    
+
     if (!currentPassword || !newPassword || !confirmPassword) {
       setPasswordError("Alle Felder sind erforderlich");
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -105,11 +120,9 @@ export default function SecuritySettingsScreen() {
     }
 
     // In a real app, this would verify the current password and update it
-    Alert.alert(
-      "Erfolg",
-      "Ihr Passwort wurde erfolgreich geaendert.",
-      [{ text: "OK", onPress: () => setShowPasswordModal(false) }]
-    );
+    Alert.alert("Erfolg", "Ihr Passwort wurde erfolgreich geaendert.", [
+      { text: "OK", onPress: () => setShowPasswordModal(false) },
+    ]);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setCurrentPassword("");
     setNewPassword("");
@@ -129,20 +142,40 @@ export default function SecuritySettingsScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Two Factor Status */}
-        <View style={[styles.section, { backgroundColor: theme.cardBackground }]}>
+        <View
+          style={[styles.section, { backgroundColor: theme.cardBackground }]}
+        >
           <View style={styles.statusCard}>
-            <View style={[styles.statusIcon, { backgroundColor: user?.twoFactorEnabled ? theme.verified + "20" : theme.warning + "20" }]}>
-              <Feather 
-                name={user?.twoFactorEnabled ? "shield" : "shield-off"} 
-                size={24} 
-                color={user?.twoFactorEnabled ? theme.verified : theme.warning} 
+            <View
+              style={[
+                styles.statusIcon,
+                {
+                  backgroundColor: user?.twoFactorEnabled
+                    ? theme.verified + "20"
+                    : theme.warning + "20",
+                },
+              ]}
+            >
+              <Feather
+                name={user?.twoFactorEnabled ? "shield" : "shield-off"}
+                size={24}
+                color={user?.twoFactorEnabled ? theme.verified : theme.warning}
               />
             </View>
             <View style={styles.statusContent}>
               <ThemedText style={styles.statusTitle}>
                 2-Faktor-Authentifizierung
               </ThemedText>
-              <ThemedText style={[styles.statusDescription, { color: user?.twoFactorEnabled ? theme.verified : theme.warning }]}>
+              <ThemedText
+                style={[
+                  styles.statusDescription,
+                  {
+                    color: user?.twoFactorEnabled
+                      ? theme.verified
+                      : theme.warning,
+                  },
+                ]}
+              >
                 {user?.twoFactorEnabled ? "Aktiv" : "Inaktiv"}
               </ThemedText>
             </View>
@@ -150,20 +183,38 @@ export default function SecuritySettingsScreen() {
         </View>
 
         {/* Biometric Authentication */}
-        <View style={[styles.section, { backgroundColor: theme.cardBackground }]}>
-          <ThemedText style={[styles.sectionTitle, { color: theme.textSecondary }]}>
+        <View
+          style={[styles.section, { backgroundColor: theme.cardBackground }]}
+        >
+          <ThemedText
+            style={[styles.sectionTitle, { color: theme.textSecondary }]}
+          >
             Geraetesicherheit
           </ThemedText>
 
-          <View style={[styles.settingItem, { borderBottomColor: theme.border }]}>
-            <View style={[styles.settingIcon, { backgroundColor: theme.primary + "15" }]}>
+          <View
+            style={[styles.settingItem, { borderBottomColor: theme.border }]}
+          >
+            <View
+              style={[
+                styles.settingIcon,
+                { backgroundColor: theme.primary + "15" },
+              ]}
+            >
               <Feather name="smartphone" size={20} color={theme.primary} />
             </View>
             <View style={styles.settingContent}>
-              <ThemedText style={styles.settingTitle}>Biometrische Anmeldung</ThemedText>
-              <ThemedText style={[styles.settingDescription, { color: theme.textSecondary }]}>
-                {biometricAvailable 
-                  ? "Face ID / Fingerabdruck verwenden" 
+              <ThemedText style={styles.settingTitle}>
+                Biometrische Anmeldung
+              </ThemedText>
+              <ThemedText
+                style={[
+                  styles.settingDescription,
+                  { color: theme.textSecondary },
+                ]}
+              >
+                {biometricAvailable
+                  ? "Face ID / Fingerabdruck verwenden"
                   : "Nicht verfuegbar auf diesem Geraet"}
               </ThemedText>
             </View>
@@ -172,17 +223,33 @@ export default function SecuritySettingsScreen() {
               onValueChange={handleBiometricToggle}
               disabled={!biometricAvailable}
               trackColor={{ false: theme.border, true: theme.primary + "60" }}
-              thumbColor={settings.biometricEnabled ? theme.primary : theme.textSecondary}
+              thumbColor={
+                settings.biometricEnabled ? theme.primary : theme.textSecondary
+              }
             />
           </View>
 
-          <View style={[styles.settingItem, { borderBottomColor: theme.border }]}>
-            <View style={[styles.settingIcon, { backgroundColor: theme.primary + "15" }]}>
+          <View
+            style={[styles.settingItem, { borderBottomColor: theme.border }]}
+          >
+            <View
+              style={[
+                styles.settingIcon,
+                { backgroundColor: theme.primary + "15" },
+              ]}
+            >
               <Feather name="clock" size={20} color={theme.primary} />
             </View>
             <View style={styles.settingContent}>
-              <ThemedText style={styles.settingTitle}>Automatische Sperre</ThemedText>
-              <ThemedText style={[styles.settingDescription, { color: theme.textSecondary }]}>
+              <ThemedText style={styles.settingTitle}>
+                Automatische Sperre
+              </ThemedText>
+              <ThemedText
+                style={[
+                  styles.settingDescription,
+                  { color: theme.textSecondary },
+                ]}
+              >
                 App nach Inaktivitaet sperren
               </ThemedText>
             </View>
@@ -190,36 +257,60 @@ export default function SecuritySettingsScreen() {
               value={settings.autoLockEnabled}
               onValueChange={(value) => updateSetting("autoLockEnabled", value)}
               trackColor={{ false: theme.border, true: theme.primary + "60" }}
-              thumbColor={settings.autoLockEnabled ? theme.primary : theme.textSecondary}
+              thumbColor={
+                settings.autoLockEnabled ? theme.primary : theme.textSecondary
+              }
             />
           </View>
         </View>
 
         {/* Password Change */}
-        <View style={[styles.section, { backgroundColor: theme.cardBackground }]}>
-          <ThemedText style={[styles.sectionTitle, { color: theme.textSecondary }]}>
+        <View
+          style={[styles.section, { backgroundColor: theme.cardBackground }]}
+        >
+          <ThemedText
+            style={[styles.sectionTitle, { color: theme.textSecondary }]}
+          >
             Passwort
           </ThemedText>
 
-          <Pressable 
+          <Pressable
             onPress={() => setShowPasswordModal(true)}
             style={[styles.settingItem, { borderBottomColor: theme.border }]}
           >
-            <View style={[styles.settingIcon, { backgroundColor: theme.primary + "15" }]}>
+            <View
+              style={[
+                styles.settingIcon,
+                { backgroundColor: theme.primary + "15" },
+              ]}
+            >
               <Feather name="lock" size={20} color={theme.primary} />
             </View>
             <View style={styles.settingContent}>
-              <ThemedText style={styles.settingTitle}>Passwort aendern</ThemedText>
-              <ThemedText style={[styles.settingDescription, { color: theme.textSecondary }]}>
+              <ThemedText style={styles.settingTitle}>
+                Passwort aendern
+              </ThemedText>
+              <ThemedText
+                style={[
+                  styles.settingDescription,
+                  { color: theme.textSecondary },
+                ]}
+              >
                 Ihr Zugangskennwort aktualisieren
               </ThemedText>
             </View>
-            <Feather name="chevron-right" size={20} color={theme.textSecondary} />
+            <Feather
+              name="chevron-right"
+              size={20}
+              color={theme.textSecondary}
+            />
           </Pressable>
         </View>
 
         {/* Security Info */}
-        <View style={[styles.infoBox, { backgroundColor: theme.verified + "10" }]}>
+        <View
+          style={[styles.infoBox, { backgroundColor: theme.verified + "10" }]}
+        >
           <Feather name="check-circle" size={18} color={theme.verified} />
           <ThemedText style={[styles.infoText, { color: theme.verified }]}>
             Ihre Daten werden verschluesselt gespeichert und uebertragen.
@@ -235,21 +326,35 @@ export default function SecuritySettingsScreen() {
         onRequestClose={() => setShowPasswordModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: theme.cardBackground }]}>
+          <View
+            style={[
+              styles.modalContent,
+              { backgroundColor: theme.cardBackground },
+            ]}
+          >
             <View style={styles.modalHeader}>
               <ThemedText type="h3">Passwort aendern</ThemedText>
-              <Pressable onPress={() => setShowPasswordModal(false)} style={styles.modalClose}>
+              <Pressable
+                onPress={() => setShowPasswordModal(false)}
+                style={styles.modalClose}
+              >
                 <Feather name="x" size={24} color={theme.text} />
               </Pressable>
             </View>
 
-            <ThemedText style={[styles.inputLabel, { color: theme.textSecondary }]}>
+            <ThemedText
+              style={[styles.inputLabel, { color: theme.textSecondary }]}
+            >
               Aktuelles Passwort
             </ThemedText>
             <TextInput
               style={[
                 styles.modalInput,
-                { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border },
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  color: theme.text,
+                  borderColor: theme.border,
+                },
               ]}
               value={currentPassword}
               onChangeText={setCurrentPassword}
@@ -258,13 +363,19 @@ export default function SecuritySettingsScreen() {
               secureTextEntry
             />
 
-            <ThemedText style={[styles.inputLabel, { color: theme.textSecondary }]}>
+            <ThemedText
+              style={[styles.inputLabel, { color: theme.textSecondary }]}
+            >
               Neues Passwort
             </ThemedText>
             <TextInput
               style={[
                 styles.modalInput,
-                { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border },
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  color: theme.text,
+                  borderColor: theme.border,
+                },
               ]}
               value={newPassword}
               onChangeText={setNewPassword}
@@ -273,13 +384,19 @@ export default function SecuritySettingsScreen() {
               secureTextEntry
             />
 
-            <ThemedText style={[styles.inputLabel, { color: theme.textSecondary }]}>
+            <ThemedText
+              style={[styles.inputLabel, { color: theme.textSecondary }]}
+            >
               Passwort bestaetigen
             </ThemedText>
             <TextInput
               style={[
                 styles.modalInput,
-                { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border },
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  color: theme.text,
+                  borderColor: theme.border,
+                },
               ]}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
@@ -295,16 +412,13 @@ export default function SecuritySettingsScreen() {
             ) : null}
 
             <View style={styles.modalButtons}>
-              <Pressable 
+              <Pressable
                 onPress={() => setShowPasswordModal(false)}
                 style={[styles.cancelButton, { borderColor: theme.border }]}
               >
                 <ThemedText style={{ color: theme.text }}>Abbrechen</ThemedText>
               </Pressable>
-              <Button 
-                onPress={handleChangePassword} 
-                style={styles.saveButton}
-              >
+              <Button onPress={handleChangePassword} style={styles.saveButton}>
                 Speichern
               </Button>
             </View>

@@ -20,7 +20,11 @@ interface MarketCardProps {
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-export function MarketCard({ market, onPress, hasPendingInfo }: MarketCardProps) {
+export function MarketCard({
+  market,
+  onPress,
+  hasPendingInfo,
+}: MarketCardProps) {
   const { theme } = useTheme();
   const scale = useSharedValue(1);
 
@@ -60,7 +64,9 @@ export function MarketCard({ market, onPress, hasPendingInfo }: MarketCardProps)
     >
       <View style={styles.header}>
         <View style={styles.wawiContainer}>
-          <ThemedText style={[styles.wawiLabel, { color: theme.textSecondary }]}>
+          <ThemedText
+            style={[styles.wawiLabel, { color: theme.textSecondary }]}
+          >
             WAWI-Nr.
           </ThemedText>
           <ThemedText style={[styles.wawiNumber, { color: theme.primary }]}>
@@ -69,12 +75,22 @@ export function MarketCard({ market, onPress, hasPendingInfo }: MarketCardProps)
         </View>
         <View style={styles.indicators}>
           {hasSecureData ? (
-            <View style={[styles.indicator, { backgroundColor: theme.encrypted + "20" }]}>
+            <View
+              style={[
+                styles.indicator,
+                { backgroundColor: theme.encrypted + "20" },
+              ]}
+            >
               <Feather name="lock" size={14} color={theme.encrypted} />
             </View>
           ) : null}
           {hasPendingInfo ? (
-            <View style={[styles.indicator, { backgroundColor: theme.pending + "20" }]}>
+            <View
+              style={[
+                styles.indicator,
+                { backgroundColor: theme.pending + "20" },
+              ]}
+            >
               <Feather name="clock" size={14} color={theme.pending} />
             </View>
           ) : null}
@@ -87,7 +103,10 @@ export function MarketCard({ market, onPress, hasPendingInfo }: MarketCardProps)
 
       <View style={styles.addressRow}>
         <Feather name="map-pin" size={14} color={theme.textSecondary} />
-        <ThemedText style={[styles.address, { color: theme.textSecondary }]} numberOfLines={1}>
+        <ThemedText
+          style={[styles.address, { color: theme.textSecondary }]}
+          numberOfLines={1}
+        >
           {market.address}, {market.city}
         </ThemedText>
       </View>
@@ -95,7 +114,10 @@ export function MarketCard({ market, onPress, hasPendingInfo }: MarketCardProps)
       {market.contactPerson ? (
         <View style={styles.contactRow}>
           <Feather name="user" size={14} color={theme.textSecondary} />
-          <ThemedText style={[styles.contact, { color: theme.textSecondary }]} numberOfLines={1}>
+          <ThemedText
+            style={[styles.contact, { color: theme.textSecondary }]}
+            numberOfLines={1}
+          >
             {market.contactPerson}
           </ThemedText>
         </View>

@@ -70,7 +70,15 @@ export interface MarketInfo {
 
 export interface ActivityLog {
   id: string;
-  action: "view" | "add" | "edit" | "delete" | "approve" | "reject" | "login" | "logout";
+  action:
+    | "view"
+    | "add"
+    | "edit"
+    | "delete"
+    | "approve"
+    | "reject"
+    | "login"
+    | "logout";
   description: string;
   marketId?: string;
   marketName?: string;

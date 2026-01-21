@@ -1,5 +1,13 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { View, StyleSheet, Pressable, FlatList, Modal, TextInput, Switch } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  FlatList,
+  Modal,
+  TextInput,
+  Switch,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { Feather } from "@expo/vector-icons";
@@ -20,7 +28,11 @@ import { MarketInfo, ActivityLog, StoredUser, UserRole } from "@/types";
 
 type TabType = "pending" | "users" | "logs";
 
-const TABS: { key: TabType; label: string; icon: keyof typeof Feather.glyphMap }[] = [
+const TABS: {
+  key: TabType;
+  label: string;
+  icon: keyof typeof Feather.glyphMap;
+}[] = [
   { key: "pending", label: "Freigaben", icon: "clock" },
   { key: "users", label: "Benutzer", icon: "users" },
   { key: "logs", label: "Audit-Logs", icon: "file-text" },
@@ -86,7 +98,11 @@ export default function AdminPanelScreen() {
   };
 
   const handleAddUser = async () => {
-    if (!newUserName.trim() || !newUserEmail.trim() || !newUserPassword.trim()) {
+    if (
+      !newUserName.trim() ||
+      !newUserEmail.trim() ||
+      !newUserPassword.trim()
+    ) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       return;
     }
@@ -98,7 +114,8 @@ export default function AdminPanelScreen() {
         email: newUserEmail.trim().toLowerCase(),
         password: newUserPassword,
         role: newUserRole,
-        twoFactorEnabled: newUser2FA || newUserRole === "admin" || newUserRole === "developer",
+        twoFactorEnabled:
+          newUser2FA || newUserRole === "admin" || newUserRole === "developer",
         createdBy: user?.id,
       });
 
@@ -132,44 +149,73 @@ export default function AdminPanelScreen() {
       return (
         <Animated.View
           entering={FadeInDown.delay(index * 50).duration(250)}
-          style={[styles.pendingCard, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
+          style={[
+            styles.pendingCard,
+            {
+              backgroundColor: theme.cardBackground,
+              borderColor: theme.border,
+            },
+          ]}
         >
           <View style={styles.pendingHeader}>
-            <View style={[styles.categoryBadge, { backgroundColor: theme.primary + "15" }]}>
-              <ThemedText style={[styles.categoryText, { color: theme.primary }]}>
+            <View
+              style={[
+                styles.categoryBadge,
+                { backgroundColor: theme.primary + "15" },
+              ]}
+            >
+              <ThemedText
+                style={[styles.categoryText, { color: theme.primary }]}
+              >
                 {item.category}
               </ThemedText>
             </View>
-            <ThemedText style={[styles.pendingDate, { color: theme.textSecondary }]}>
+            <ThemedText
+              style={[styles.pendingDate, { color: theme.textSecondary }]}
+            >
               {new Date(item.createdAt).toLocaleDateString("de-DE")}
             </ThemedText>
           </View>
-          
+
           {market ? (
             <View style={styles.marketInfo}>
-              <Feather name="shopping-bag" size={14} color={theme.textSecondary} />
-              <ThemedText style={[styles.marketName, { color: theme.textSecondary }]}>
+              <Feather
+                name="shopping-bag"
+                size={14}
+                color={theme.textSecondary}
+              />
+              <ThemedText
+                style={[styles.marketName, { color: theme.textSecondary }]}
+              >
                 {market.name}
               </ThemedText>
             </View>
           ) : null}
 
           <ThemedText style={styles.pendingContent}>{item.content}</ThemedText>
-          
+
           <View style={styles.pendingFooter}>
-            <ThemedText style={[styles.pendingAuthor, { color: theme.textSecondary }]}>
+            <ThemedText
+              style={[styles.pendingAuthor, { color: theme.textSecondary }]}
+            >
               von {item.createdByName}
             </ThemedText>
             <View style={styles.pendingActions}>
               <Pressable
                 onPress={() => handleReject(item)}
-                style={[styles.actionButton, { backgroundColor: theme.error + "15" }]}
+                style={[
+                  styles.actionButton,
+                  { backgroundColor: theme.error + "15" },
+                ]}
               >
                 <Feather name="x" size={18} color={theme.error} />
               </Pressable>
               <Pressable
                 onPress={() => handleApprove(item)}
-                style={[styles.actionButton, { backgroundColor: theme.verified + "15" }]}
+                style={[
+                  styles.actionButton,
+                  { backgroundColor: theme.verified + "15" },
+                ]}
               >
                 <Feather name="check" size={18} color={theme.verified} />
               </Pressable>
@@ -178,7 +224,7 @@ export default function AdminPanelScreen() {
         </Animated.View>
       );
     },
-    [theme, getMarketById, handleApprove, handleReject]
+    [theme, getMarketById, handleApprove, handleReject],
   );
 
   const renderUserItem = useCallback(
@@ -186,17 +232,29 @@ export default function AdminPanelScreen() {
       <Animated.View
         entering={FadeInDown.delay(index * 50).duration(250)}
         style={[
-          styles.userCard, 
-          { 
-            backgroundColor: theme.cardBackground, 
+          styles.userCard,
+          {
+            backgroundColor: theme.cardBackground,
             borderColor: theme.border,
             opacity: item.isActive ? 1 : 0.5,
-          }
+          },
         ]}
       >
-        <View style={[styles.userAvatar, { backgroundColor: item.isActive ? theme.primary : theme.textSecondary }]}>
+        <View
+          style={[
+            styles.userAvatar,
+            {
+              backgroundColor: item.isActive
+                ? theme.primary
+                : theme.textSecondary,
+            },
+          ]}
+        >
           <ThemedText style={styles.userAvatarText}>
-            {item.name.split(" ").map((n) => n[0]).join("")}
+            {item.name
+              .split(" ")
+              .map((n) => n[0])
+              .join("")}
           </ThemedText>
         </View>
         <View style={styles.userInfo}>
@@ -205,14 +263,23 @@ export default function AdminPanelScreen() {
               {item.name}
             </ThemedText>
             {!item.isActive ? (
-              <View style={[styles.inactiveBadge, { backgroundColor: theme.error + "20" }]}>
-                <ThemedText style={[styles.inactiveText, { color: theme.error }]}>
+              <View
+                style={[
+                  styles.inactiveBadge,
+                  { backgroundColor: theme.error + "20" },
+                ]}
+              >
+                <ThemedText
+                  style={[styles.inactiveText, { color: theme.error }]}
+                >
                   Inaktiv
                 </ThemedText>
               </View>
             ) : null}
           </View>
-          <ThemedText style={[styles.userEmail, { color: theme.textSecondary }]}>
+          <ThemedText
+            style={[styles.userEmail, { color: theme.textSecondary }]}
+          >
             {item.email}
           </ThemedText>
           {item.twoFactorEnabled ? (
@@ -231,17 +298,17 @@ export default function AdminPanelScreen() {
               onPress={() => handleToggleUserActive(item.id)}
               style={[styles.toggleButton, { borderColor: theme.border }]}
             >
-              <Feather 
-                name={item.isActive ? "user-x" : "user-check"} 
-                size={16} 
-                color={item.isActive ? theme.error : theme.verified} 
+              <Feather
+                name={item.isActive ? "user-x" : "user-check"}
+                size={16}
+                color={item.isActive ? theme.error : theme.verified}
               />
             </Pressable>
           ) : null}
         </View>
       </Animated.View>
     ),
-    [theme, user, handleToggleUserActive]
+    [theme, user, handleToggleUserActive],
   );
 
   const renderLogItem = useCallback(
@@ -250,7 +317,7 @@ export default function AdminPanelScreen() {
         <ActivityItem log={item} />
       </Animated.View>
     ),
-    []
+    [],
   );
 
   const renderContent = () => {
@@ -278,12 +345,15 @@ export default function AdminPanelScreen() {
               data={users}
               keyExtractor={(item) => item.id}
               renderItem={renderUserItem}
-              contentContainerStyle={[styles.listContent, { paddingBottom: 100 }]}
+              contentContainerStyle={[
+                styles.listContent,
+                { paddingBottom: 100 },
+              ]}
               showsVerticalScrollIndicator={false}
             />
-            <FAB 
-              icon="user-plus" 
-              onPress={() => setShowAddModal(true)} 
+            <FAB
+              icon="user-plus"
+              onPress={() => setShowAddModal(true)}
               bottom={insets.bottom + Spacing.lg}
             />
           </View>
@@ -313,7 +383,7 @@ export default function AdminPanelScreen() {
         {TABS.map((tab) => {
           const isActive = activeTab === tab.key;
           const count = tab.key === "pending" ? pendingInfos.length : undefined;
-          
+
           return (
             <Pressable
               key={tab.key}
@@ -343,7 +413,12 @@ export default function AdminPanelScreen() {
                 {tab.label}
               </ThemedText>
               {count !== undefined && count > 0 ? (
-                <View style={[styles.tabBadge, { backgroundColor: isActive ? "#FFFFFF" : theme.pending }]}>
+                <View
+                  style={[
+                    styles.tabBadge,
+                    { backgroundColor: isActive ? "#FFFFFF" : theme.pending },
+                  ]}
+                >
                   <ThemedText
                     style={[
                       styles.tabBadgeText,
@@ -368,10 +443,18 @@ export default function AdminPanelScreen() {
         onRequestClose={() => setShowAddModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: theme.cardBackground }]}>
+          <View
+            style={[
+              styles.modalContent,
+              { backgroundColor: theme.cardBackground },
+            ]}
+          >
             <View style={styles.modalHeader}>
               <ThemedText type="h3">Neuen Mitarbeiter anlegen</ThemedText>
-              <Pressable onPress={() => setShowAddModal(false)} style={styles.modalClose}>
+              <Pressable
+                onPress={() => setShowAddModal(false)}
+                style={styles.modalClose}
+              >
                 <Feather name="x" size={24} color={theme.text} />
               </Pressable>
             </View>
@@ -403,7 +486,9 @@ export default function AdminPanelScreen() {
               leftIcon="lock"
             />
 
-            <ThemedText style={[styles.inputLabel, { color: theme.textSecondary }]}>
+            <ThemedText
+              style={[styles.inputLabel, { color: theme.textSecondary }]}
+            >
               Rolle
             </ThemedText>
             <View style={styles.roleOptions}>
@@ -414,15 +499,24 @@ export default function AdminPanelScreen() {
                   style={[
                     styles.roleOption,
                     {
-                      backgroundColor: newUserRole === option.value ? theme.primary : "transparent",
-                      borderColor: newUserRole === option.value ? theme.primary : theme.border,
+                      backgroundColor:
+                        newUserRole === option.value
+                          ? theme.primary
+                          : "transparent",
+                      borderColor:
+                        newUserRole === option.value
+                          ? theme.primary
+                          : theme.border,
                     },
                   ]}
                 >
                   <ThemedText
                     style={[
                       styles.roleOptionText,
-                      { color: newUserRole === option.value ? "#FFFFFF" : theme.text },
+                      {
+                        color:
+                          newUserRole === option.value ? "#FFFFFF" : theme.text,
+                      },
                     ]}
                   >
                     {option.label}
@@ -433,34 +527,51 @@ export default function AdminPanelScreen() {
 
             {newUserRole === "user" ? (
               <View style={styles.switchRow}>
-                <ThemedText style={styles.switchLabel}>2-Faktor-Authentifizierung</ThemedText>
+                <ThemedText style={styles.switchLabel}>
+                  2-Faktor-Authentifizierung
+                </ThemedText>
                 <Switch
                   value={newUser2FA}
                   onValueChange={setNewUser2FA}
-                  trackColor={{ false: theme.border, true: theme.primary + "60" }}
+                  trackColor={{
+                    false: theme.border,
+                    true: theme.primary + "60",
+                  }}
                   thumbColor={newUser2FA ? theme.primary : theme.textSecondary}
                 />
               </View>
             ) : (
-              <View style={[styles.infoBox, { backgroundColor: theme.primary + "15" }]}>
+              <View
+                style={[
+                  styles.infoBox,
+                  { backgroundColor: theme.primary + "15" },
+                ]}
+              >
                 <Feather name="shield" size={16} color={theme.primary} />
-                <ThemedText style={[styles.infoBoxText, { color: theme.primary }]}>
+                <ThemedText
+                  style={[styles.infoBoxText, { color: theme.primary }]}
+                >
                   2FA ist fuer Admins und Entwickler erforderlich
                 </ThemedText>
               </View>
             )}
 
             <View style={styles.modalButtons}>
-              <Pressable 
+              <Pressable
                 onPress={() => setShowAddModal(false)}
                 style={[styles.cancelButton, { borderColor: theme.border }]}
               >
                 <ThemedText style={{ color: theme.text }}>Abbrechen</ThemedText>
               </Pressable>
-              <Button 
-                onPress={handleAddUser} 
+              <Button
+                onPress={handleAddUser}
                 style={styles.saveButton}
-                disabled={isLoading || !newUserName.trim() || !newUserEmail.trim() || !newUserPassword.trim()}
+                disabled={
+                  isLoading ||
+                  !newUserName.trim() ||
+                  !newUserEmail.trim() ||
+                  !newUserPassword.trim()
+                }
               >
                 Anlegen
               </Button>

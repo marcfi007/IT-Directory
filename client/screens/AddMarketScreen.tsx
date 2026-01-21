@@ -76,7 +76,9 @@ export default function AddMarketScreen() {
           city: city.trim(),
           contactPerson: contactPerson.trim() || undefined,
           parkingInfo: parkingInfo.trim() || undefined,
-          doorCodes: doorCodes.trim() ? `encrypted:${doorCodes.trim()}` : undefined,
+          doorCodes: doorCodes.trim()
+            ? `encrypted:${doorCodes.trim()}`
+            : undefined,
           egateAccess: egateAccess.trim() || undefined,
           egateBarcode: egateBarcode.trim() || undefined,
           serverLocation: serverLocation.trim() || undefined,
@@ -86,7 +88,7 @@ export default function AddMarketScreen() {
           createdBy: user.id,
         },
         user.id,
-        user.name
+        user.name,
       );
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -104,12 +106,23 @@ export default function AddMarketScreen() {
       <ScrollView
         contentContainerStyle={[
           styles.content,
-          { paddingTop: headerHeight + Spacing.md, paddingBottom: insets.bottom + Spacing["2xl"] },
+          {
+            paddingTop: headerHeight + Spacing.md,
+            paddingBottom: insets.bottom + Spacing["2xl"],
+          },
         ]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={[styles.section, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+        <View
+          style={[
+            styles.section,
+            {
+              backgroundColor: theme.cardBackground,
+              borderColor: theme.border,
+            },
+          ]}
+        >
           <ThemedText style={[styles.sectionTitle, { color: theme.primary }]}>
             Pflichtangaben
           </ThemedText>
@@ -148,7 +161,15 @@ export default function AddMarketScreen() {
           />
         </View>
 
-        <View style={[styles.section, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+        <View
+          style={[
+            styles.section,
+            {
+              backgroundColor: theme.cardBackground,
+              borderColor: theme.border,
+            },
+          ]}
+        >
           <ThemedText style={[styles.sectionTitle, { color: theme.primary }]}>
             Kontakt & Zugang
           </ThemedText>
@@ -194,7 +215,15 @@ export default function AddMarketScreen() {
           />
         </View>
 
-        <View style={[styles.section, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+        <View
+          style={[
+            styles.section,
+            {
+              backgroundColor: theme.cardBackground,
+              borderColor: theme.border,
+            },
+          ]}
+        >
           <ThemedText style={[styles.sectionTitle, { color: theme.primary }]}>
             IT-Infrastruktur
           </ThemedText>
@@ -238,7 +267,11 @@ export default function AddMarketScreen() {
           </ThemedText>
         ) : null}
 
-        <Button onPress={handleSubmit} disabled={isLoading} style={styles.submitButton}>
+        <Button
+          onPress={handleSubmit}
+          disabled={isLoading}
+          style={styles.submitButton}
+        >
           {isLoading ? (
             <ActivityIndicator color="#FFFFFF" size="small" />
           ) : (

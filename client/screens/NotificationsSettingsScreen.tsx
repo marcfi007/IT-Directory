@@ -29,7 +29,8 @@ export default function NotificationsSettingsScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const { theme } = useTheme();
-  const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_SETTINGS);
+  const [settings, setSettings] =
+    useState<NotificationSettings>(DEFAULT_SETTINGS);
 
   useEffect(() => {
     loadSettings();
@@ -46,10 +47,16 @@ export default function NotificationsSettingsScreen() {
     }
   };
 
-  const updateSetting = async (key: keyof NotificationSettings, value: boolean) => {
+  const updateSetting = async (
+    key: keyof NotificationSettings,
+    value: boolean,
+  ) => {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
-    await AsyncStorage.setItem(NOTIFICATION_SETTINGS_KEY, JSON.stringify(newSettings));
+    await AsyncStorage.setItem(
+      NOTIFICATION_SETTINGS_KEY,
+      JSON.stringify(newSettings),
+    );
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
@@ -57,15 +64,19 @@ export default function NotificationsSettingsScreen() {
     key: keyof NotificationSettings,
     icon: keyof typeof Feather.glyphMap,
     title: string,
-    description: string
+    description: string,
   ) => (
     <View style={[styles.settingItem, { borderBottomColor: theme.border }]}>
-      <View style={[styles.settingIcon, { backgroundColor: theme.primary + "15" }]}>
+      <View
+        style={[styles.settingIcon, { backgroundColor: theme.primary + "15" }]}
+      >
         <Feather name={icon} size={20} color={theme.primary} />
       </View>
       <View style={styles.settingContent}>
         <ThemedText style={styles.settingTitle}>{title}</ThemedText>
-        <ThemedText style={[styles.settingDescription, { color: theme.textSecondary }]}>
+        <ThemedText
+          style={[styles.settingDescription, { color: theme.textSecondary }]}
+        >
           {description}
         </ThemedText>
       </View>
@@ -90,8 +101,12 @@ export default function NotificationsSettingsScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={[styles.section, { backgroundColor: theme.cardBackground }]}>
-          <ThemedText style={[styles.sectionTitle, { color: theme.textSecondary }]}>
+        <View
+          style={[styles.section, { backgroundColor: theme.cardBackground }]}
+        >
+          <ThemedText
+            style={[styles.sectionTitle, { color: theme.textSecondary }]}
+          >
             Push-Benachrichtigungen
           </ThemedText>
 
@@ -99,35 +114,38 @@ export default function NotificationsSettingsScreen() {
             "newMarkets",
             "shopping-bag",
             "Neue Maerkte",
-            "Benachrichtigung wenn neue Maerkte angelegt werden"
+            "Benachrichtigung wenn neue Maerkte angelegt werden",
           )}
 
           {renderSettingItem(
             "pendingApprovals",
             "clock",
             "Ausstehende Freigaben",
-            "Benachrichtigung bei neuen Freigabeanfragen"
+            "Benachrichtigung bei neuen Freigabeanfragen",
           )}
 
           {renderSettingItem(
             "infoUpdates",
             "info",
             "Info-Aktualisierungen",
-            "Benachrichtigung bei Aenderungen an Marktinfos"
+            "Benachrichtigung bei Aenderungen an Marktinfos",
           )}
 
           {renderSettingItem(
             "securityAlerts",
             "shield",
             "Sicherheitswarnungen",
-            "Wichtige Sicherheitsbenachrichtigungen"
+            "Wichtige Sicherheitsbenachrichtigungen",
           )}
         </View>
 
-        <View style={[styles.infoBox, { backgroundColor: theme.primary + "10" }]}>
+        <View
+          style={[styles.infoBox, { backgroundColor: theme.primary + "10" }]}
+        >
           <Feather name="info" size={18} color={theme.primary} />
           <ThemedText style={[styles.infoText, { color: theme.primary }]}>
-            Einige Benachrichtigungen sind systemkritisch und koennen nicht deaktiviert werden.
+            Einige Benachrichtigungen sind systemkritisch und koennen nicht
+            deaktiviert werden.
           </ThemedText>
         </View>
       </ScrollView>

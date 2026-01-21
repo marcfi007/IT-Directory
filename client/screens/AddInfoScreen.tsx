@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { View, StyleSheet, ScrollView, Pressable, ActivityIndicator, TextInput } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Pressable,
+  ActivityIndicator,
+  TextInput,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
@@ -33,7 +40,9 @@ export default function AddInfoScreen() {
   const { user } = useAuth();
   const { allMarkets, addMarketInfo } = useMarketContext();
 
-  const [selectedMarketId, setSelectedMarketId] = useState(route.params?.marketId || "");
+  const [selectedMarketId, setSelectedMarketId] = useState(
+    route.params?.marketId || "",
+  );
   const [category, setCategory] = useState<string>("parking");
   const [content, setContent] = useState("");
   const [barcodeValue, setBarcodeValue] = useState("");
@@ -71,7 +80,10 @@ export default function AddInfoScreen() {
       await addMarketInfo({
         marketId: selectedMarketId,
         category: category as "parking" | "it-info" | "barcode" | "other",
-        content: category === "barcode" ? `Barcode: ${barcodeValue.trim()}${content.trim() ? ` - ${content.trim()}` : ""}` : content.trim(),
+        content:
+          category === "barcode"
+            ? `Barcode: ${barcodeValue.trim()}${content.trim() ? ` - ${content.trim()}` : ""}`
+            : content.trim(),
         barcodeValue: category === "barcode" ? barcodeValue.trim() : undefined,
         createdBy: user.id,
         createdByName: user.name,
@@ -92,31 +104,45 @@ export default function AddInfoScreen() {
       <ScrollView
         contentContainerStyle={[
           styles.content,
-          { paddingTop: headerHeight + Spacing.md, paddingBottom: insets.bottom + Spacing["2xl"] },
+          {
+            paddingTop: headerHeight + Spacing.md,
+            paddingBottom: insets.bottom + Spacing["2xl"],
+          },
         ]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.section}>
-          <ThemedText style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+          <ThemedText
+            style={[styles.sectionLabel, { color: theme.textSecondary }]}
+          >
             Markt auswaehlen
           </ThemedText>
           <Pressable
             onPress={() => setShowMarketPicker(!showMarketPicker)}
             style={[
               styles.marketSelector,
-              { backgroundColor: theme.cardBackground, borderColor: theme.border },
+              {
+                backgroundColor: theme.cardBackground,
+                borderColor: theme.border,
+              },
             ]}
           >
             {selectedMarket ? (
               <View style={styles.selectedMarket}>
-                <ThemedText style={styles.marketName}>{selectedMarket.name}</ThemedText>
-                <ThemedText style={[styles.marketWawi, { color: theme.primary }]}>
+                <ThemedText style={styles.marketName}>
+                  {selectedMarket.name}
+                </ThemedText>
+                <ThemedText
+                  style={[styles.marketWawi, { color: theme.primary }]}
+                >
                   WAWI: {selectedMarket.wawiNumber}
                 </ThemedText>
               </View>
             ) : (
-              <ThemedText style={[styles.placeholder, { color: theme.textSecondary }]}>
+              <ThemedText
+                style={[styles.placeholder, { color: theme.textSecondary }]}
+              >
                 Markt auswaehlen...
               </ThemedText>
             )}
@@ -128,7 +154,15 @@ export default function AddInfoScreen() {
           </Pressable>
 
           {showMarketPicker ? (
-            <View style={[styles.marketList, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+            <View
+              style={[
+                styles.marketList,
+                {
+                  backgroundColor: theme.cardBackground,
+                  borderColor: theme.border,
+                },
+              ]}
+            >
               {allMarkets.map((market) => (
                 <Pressable
                   key={market.id}
@@ -138,11 +172,20 @@ export default function AddInfoScreen() {
                   }}
                   style={[
                     styles.marketOption,
-                    selectedMarketId === market.id && { backgroundColor: theme.primary + "15" },
+                    selectedMarketId === market.id && {
+                      backgroundColor: theme.primary + "15",
+                    },
                   ]}
                 >
-                  <ThemedText style={styles.marketOptionName}>{market.name}</ThemedText>
-                  <ThemedText style={[styles.marketOptionWawi, { color: theme.textSecondary }]}>
+                  <ThemedText style={styles.marketOptionName}>
+                    {market.name}
+                  </ThemedText>
+                  <ThemedText
+                    style={[
+                      styles.marketOptionWawi,
+                      { color: theme.textSecondary },
+                    ]}
+                  >
                     {market.wawiNumber}
                   </ThemedText>
                 </Pressable>
@@ -152,7 +195,9 @@ export default function AddInfoScreen() {
         </View>
 
         <View style={styles.section}>
-          <ThemedText style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+          <ThemedText
+            style={[styles.sectionLabel, { color: theme.textSecondary }]}
+          >
             Kategorie
           </ThemedText>
           <View style={styles.categoryGrid}>
@@ -167,8 +212,11 @@ export default function AddInfoScreen() {
                   styles.categoryButton,
                   {
                     backgroundColor:
-                      category === cat.key ? theme.primary : theme.cardBackground,
-                    borderColor: category === cat.key ? theme.primary : theme.border,
+                      category === cat.key
+                        ? theme.primary
+                        : theme.cardBackground,
+                    borderColor:
+                      category === cat.key ? theme.primary : theme.border,
                   },
                 ]}
               >
@@ -192,24 +240,37 @@ export default function AddInfoScreen() {
 
         {category === "barcode" ? (
           <View style={styles.section}>
-            <ThemedText style={[styles.sectionLabel, { color: theme.textSecondary }]}>
-              Barcode-Wert
-            </ThemedText>
             <Input
+              label="Barcode-Wert"
               placeholder="z.B. REWE2001ALEX"
               value={barcodeValue}
               onChangeText={setBarcodeValue}
               leftIcon="maximize"
             />
-            
+
             {barcodeValue.trim().length > 0 ? (
-              <View style={[styles.barcodePreview, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-                <ThemedText style={[styles.previewLabel, { color: theme.textSecondary }]}>
+              <View
+                style={[
+                  styles.barcodePreview,
+                  {
+                    backgroundColor: theme.cardBackground,
+                    borderColor: theme.border,
+                  },
+                ]}
+              >
+                <ThemedText
+                  style={[styles.previewLabel, { color: theme.textSecondary }]}
+                >
                   Vorschau
                 </ThemedText>
-                <View style={[styles.barcodeWrapper, { backgroundColor: "#FFFFFF" }]}>
-                  <Barcode 
-                    value={barcodeValue.trim()} 
+                <View
+                  style={[
+                    styles.barcodeWrapper,
+                    { backgroundColor: "#FFFFFF" },
+                  ]}
+                >
+                  <Barcode
+                    value={barcodeValue.trim()}
                     format="CODE128"
                     width={2}
                     height={50}
@@ -217,19 +278,29 @@ export default function AddInfoScreen() {
                     lineColor="#000000"
                   />
                 </View>
-                <ThemedText style={[styles.barcodeValueText, { color: theme.text }]}>
+                <ThemedText
+                  style={[styles.barcodeValueText, { color: theme.text }]}
+                >
                   {barcodeValue.trim()}
                 </ThemedText>
               </View>
             ) : null}
 
-            <ThemedText style={[styles.sectionLabel, { color: theme.textSecondary, marginTop: Spacing.lg }]}>
+            <ThemedText
+              style={[
+                styles.sectionLabel,
+                { color: theme.textSecondary, marginTop: Spacing.lg },
+              ]}
+            >
               Beschreibung (optional)
             </ThemedText>
             <View
               style={[
                 styles.textAreaContainer,
-                { backgroundColor: theme.cardBackground, borderColor: theme.border },
+                {
+                  backgroundColor: theme.cardBackground,
+                  borderColor: theme.border,
+                },
               ]}
             >
               <TextInput
@@ -239,20 +310,29 @@ export default function AddInfoScreen() {
                 onChangeText={setContent}
                 multiline
                 numberOfLines={3}
-                style={[styles.textArea, styles.smallTextArea, { color: theme.text }]}
+                style={[
+                  styles.textArea,
+                  styles.smallTextArea,
+                  { color: theme.text },
+                ]}
                 textAlignVertical="top"
               />
             </View>
           </View>
         ) : (
           <View style={styles.section}>
-            <ThemedText style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+            <ThemedText
+              style={[styles.sectionLabel, { color: theme.textSecondary }]}
+            >
               Information
             </ThemedText>
             <View
               style={[
                 styles.textAreaContainer,
-                { backgroundColor: theme.cardBackground, borderColor: theme.border },
+                {
+                  backgroundColor: theme.cardBackground,
+                  borderColor: theme.border,
+                },
               ]}
             >
               <TextInput
@@ -275,14 +355,20 @@ export default function AddInfoScreen() {
           </ThemedText>
         ) : null}
 
-        <View style={[styles.infoBox, { backgroundColor: theme.primary + "10" }]}>
+        <View
+          style={[styles.infoBox, { backgroundColor: theme.primary + "10" }]}
+        >
           <Feather name="info" size={18} color={theme.primary} />
           <ThemedText style={[styles.infoText, { color: theme.primary }]}>
             Ihre Ergaenzung wird zur Freigabe an einen Admin gesendet.
           </ThemedText>
         </View>
 
-        <Button onPress={handleSubmit} disabled={isLoading} style={styles.submitButton}>
+        <Button
+          onPress={handleSubmit}
+          disabled={isLoading}
+          style={styles.submitButton}
+        >
           {isLoading ? (
             <ActivityIndicator color="#FFFFFF" size="small" />
           ) : (

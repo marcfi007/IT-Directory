@@ -30,7 +30,12 @@ export function EmptyState({
       {image ? (
         <Image source={image} style={styles.image} resizeMode="contain" />
       ) : icon ? (
-        <View style={[styles.iconContainer, { backgroundColor: theme.primary + "15" }]}>
+        <View
+          style={[
+            styles.iconContainer,
+            { backgroundColor: theme.primary + "15" },
+          ]}
+        >
           <Feather name={icon} size={48} color={theme.primary} />
         </View>
       ) : null}
@@ -38,7 +43,9 @@ export function EmptyState({
         {title}
       </ThemedText>
       {description ? (
-        <ThemedText style={[styles.description, { color: theme.textSecondary }]}>
+        <ThemedText
+          style={[styles.description, { color: theme.textSecondary }]}
+        >
           {description}
         </ThemedText>
       ) : null}

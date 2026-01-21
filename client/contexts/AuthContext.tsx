@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+  ReactNode,
+} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User, UserRole, AuthState, StoredUser } from "@/types";
 
@@ -9,7 +16,9 @@ interface AuthContextType extends AuthState {
   verify2FA: (code: string) => Promise<boolean>;
   logout: () => Promise<void>;
   switchRole: (role: UserRole) => void;
-  addUser: (userData: Omit<StoredUser, "id" | "createdAt" | "isActive">) => Promise<StoredUser>;
+  addUser: (
+    userData: Omit<StoredUser, "id" | "createdAt" | "isActive">,
+  ) => Promise<StoredUser>;
   getUsers: () => Promise<StoredUser[]>;
   toggleUserActive: (userId: string) => Promise<void>;
 }
@@ -65,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const initializeAuth = async () => {
     try {
       await AsyncStorage.removeItem("@stored_users");
-      
+
       const stored = await AsyncStorage.getItem(USERS_KEY);
       if (stored) {
         usersRef.current = JSON.parse(stored);
@@ -94,7 +103,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string): Promise<boolean> => {
     const users = usersRef.current;
     const foundUser = users.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password && u.isActive
+      (u) =>
+        u.email.toLowerCase() === email.toLowerCase() &&
+        u.password === password &&
+        u.isActive,
     );
 
     if (foundUser) {
@@ -155,7 +167,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const addUser = async (userData: Omit<StoredUser, "id" | "createdAt" | "isActive">): Promise<StoredUser> => {
+  const addUser = async (
+    userData: Omit<StoredUser, "id" | "createdAt" | "isActive">,
+  ): Promise<StoredUser> => {
     const newUser: StoredUser = {
       ...userData,
       id: Date.now().toString(),
@@ -175,7 +189,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const toggleUserActive = async (userId: string): Promise<void> => {
     const updatedUsers = usersRef.current.map((u) =>
-      u.id === userId ? { ...u, isActive: !u.isActive } : u
+      u.id === userId ? { ...u, isActive: !u.isActive } : u,
     );
     usersRef.current = updatedUsers;
     await AsyncStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));

@@ -29,18 +29,22 @@ export default function AboutScreen() {
     icon: keyof typeof Feather.glyphMap,
     title: string,
     description: string,
-    url: string
+    url: string,
   ) => (
-    <Pressable 
+    <Pressable
       onPress={() => handleOpenLink(url)}
       style={[styles.linkItem, { borderBottomColor: theme.border }]}
     >
-      <View style={[styles.linkIcon, { backgroundColor: theme.primary + "15" }]}>
+      <View
+        style={[styles.linkIcon, { backgroundColor: theme.primary + "15" }]}
+      >
         <Feather name={icon} size={20} color={theme.primary} />
       </View>
       <View style={styles.linkContent}>
         <ThemedText style={styles.linkTitle}>{title}</ThemedText>
-        <ThemedText style={[styles.linkDescription, { color: theme.textSecondary }]}>
+        <ThemedText
+          style={[styles.linkDescription, { color: theme.textSecondary }]}
+        >
           {description}
         </ThemedText>
       </View>
@@ -61,24 +65,38 @@ export default function AboutScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* App Info Card */}
-        <View style={[styles.appInfoCard, { backgroundColor: theme.cardBackground }]}>
+        <View
+          style={[
+            styles.appInfoCard,
+            { backgroundColor: theme.cardBackground },
+          ]}
+        >
           <View style={[styles.appIcon, { backgroundColor: theme.primary }]}>
             <Feather name="shopping-bag" size={32} color="#FFFFFF" />
           </View>
           <ThemedText type="h2" style={styles.appName}>
             IT-Markt Verzeichnis
           </ThemedText>
-          <ThemedText style={[styles.appVersion, { color: theme.textSecondary }]}>
+          <ThemedText
+            style={[styles.appVersion, { color: theme.textSecondary }]}
+          >
             Version {APP_VERSION} (Build {BUILD_NUMBER})
           </ThemedText>
-          <ThemedText style={[styles.appDescription, { color: theme.textSecondary }]}>
-            Die zentrale App fuer IT-Servicetechniker zur Verwaltung von Marktinformationen
+          <ThemedText
+            style={[styles.appDescription, { color: theme.textSecondary }]}
+          >
+            Die zentrale App fuer IT-Servicetechniker zur Verwaltung von
+            Marktinformationen
           </ThemedText>
         </View>
 
         {/* Links Section */}
-        <View style={[styles.section, { backgroundColor: theme.cardBackground }]}>
-          <ThemedText style={[styles.sectionTitle, { color: theme.textSecondary }]}>
+        <View
+          style={[styles.section, { backgroundColor: theme.cardBackground }]}
+        >
+          <ThemedText
+            style={[styles.sectionTitle, { color: theme.textSecondary }]}
+          >
             Rechtliches
           </ThemedText>
 
@@ -86,27 +104,31 @@ export default function AboutScreen() {
             "file-text",
             "Datenschutzerklaerung",
             "Informationen zum Datenschutz",
-            "https://example.com/privacy"
+            "https://example.com/privacy",
           )}
 
           {renderLinkItem(
             "book-open",
             "Nutzungsbedingungen",
             "AGB und Nutzungsrichtlinien",
-            "https://example.com/terms"
+            "https://example.com/terms",
           )}
 
           {renderLinkItem(
             "info",
             "Impressum",
             "Rechtliche Informationen",
-            "https://example.com/imprint"
+            "https://example.com/imprint",
           )}
         </View>
 
         {/* Support Section */}
-        <View style={[styles.section, { backgroundColor: theme.cardBackground }]}>
-          <ThemedText style={[styles.sectionTitle, { color: theme.textSecondary }]}>
+        <View
+          style={[styles.section, { backgroundColor: theme.cardBackground }]}
+        >
+          <ThemedText
+            style={[styles.sectionTitle, { color: theme.textSecondary }]}
+          >
             Support
           </ThemedText>
 
@@ -114,27 +136,31 @@ export default function AboutScreen() {
             "help-circle",
             "Hilfe & FAQ",
             "Antworten auf haeufige Fragen",
-            "https://example.com/help"
+            "https://example.com/help",
           )}
 
           {renderLinkItem(
             "mail",
             "Kontakt",
             "Unser Support-Team kontaktieren",
-            "mailto:support@example.com"
+            "mailto:support@example.com",
           )}
 
           {renderLinkItem(
             "message-circle",
             "Feedback",
             "Verbesserungsvorschlaege senden",
-            "https://example.com/feedback"
+            "https://example.com/feedback",
           )}
         </View>
 
         {/* Features Section */}
-        <View style={[styles.section, { backgroundColor: theme.cardBackground }]}>
-          <ThemedText style={[styles.sectionTitle, { color: theme.textSecondary }]}>
+        <View
+          style={[styles.section, { backgroundColor: theme.cardBackground }]}
+        >
+          <ThemedText
+            style={[styles.sectionTitle, { color: theme.textSecondary }]}
+          >
             Funktionen
           </ThemedText>
 
@@ -174,10 +200,14 @@ export default function AboutScreen() {
 
         {/* Copyright */}
         <View style={styles.copyrightSection}>
-          <ThemedText style={[styles.copyrightText, { color: theme.textSecondary }]}>
+          <ThemedText
+            style={[styles.copyrightText, { color: theme.textSecondary }]}
+          >
             © {new Date().getFullYear()} IT-Markt Verzeichnis
           </ThemedText>
-          <ThemedText style={[styles.copyrightText, { color: theme.textSecondary }]}>
+          <ThemedText
+            style={[styles.copyrightText, { color: theme.textSecondary }]}
+          >
             Alle Rechte vorbehalten.
           </ThemedText>
         </View>

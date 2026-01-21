@@ -12,7 +12,10 @@ interface RoleBadgeProps {
   style?: ViewStyle;
 }
 
-const ROLE_CONFIG: Record<UserRole, { label: string; icon: keyof typeof Feather.glyphMap }> = {
+const ROLE_CONFIG: Record<
+  UserRole,
+  { label: string; icon: keyof typeof Feather.glyphMap }
+> = {
   admin: { label: "Admin", icon: "shield" },
   developer: { label: "Entwickler", icon: "code" },
   user: { label: "Techniker", icon: "tool" },
@@ -35,11 +38,26 @@ export function RoleBadge({ role, size = "medium", style }: RoleBadgeProps) {
   const getSizeStyles = () => {
     switch (size) {
       case "small":
-        return { paddingHorizontal: Spacing.sm, paddingVertical: 2, iconSize: 10, fontSize: 10 };
+        return {
+          paddingHorizontal: Spacing.sm,
+          paddingVertical: 2,
+          iconSize: 10,
+          fontSize: 10,
+        };
       case "medium":
-        return { paddingHorizontal: Spacing.md, paddingVertical: 4, iconSize: 12, fontSize: 12 };
+        return {
+          paddingHorizontal: Spacing.md,
+          paddingVertical: 4,
+          iconSize: 12,
+          fontSize: 12,
+        };
       case "large":
-        return { paddingHorizontal: Spacing.lg, paddingVertical: 6, iconSize: 14, fontSize: 14 };
+        return {
+          paddingHorizontal: Spacing.lg,
+          paddingVertical: 6,
+          iconSize: 14,
+          fontSize: 14,
+        };
     }
   };
 
