@@ -1,6 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Market, MarketInfo, ActivityLog, CodeHistoryEntry, FieldHistory } from "@/types";
+import {
+  Market,
+  MarketInfo,
+  ActivityLog,
+  CodeHistoryEntry,
+  FieldHistory,
+} from "@/types";
 
 const MARKETS_KEY = "@markets";
 const MARKET_INFOS_KEY = "@market_infos";
@@ -17,7 +23,8 @@ const DEMO_MARKETS: Market[] = [
     parkingInfo: "Tiefgarage Einfahrt links, P2",
     doorCodes: "encrypted:4521",
     egateAccess: "Mitarbeiter-Badge + PIN",
-    egateBarcode: "REWE2001ALEX",
+    kassenBarcode: "KASSE2001ALEX",
+    exitGateBarcode: "EXIT2001ALEX",
     barcodeInfo: "Scanner Typ A, Wareneingang hinten",
     serverLocation: "Serverraum UG, Rack 3",
     switchRouterLocation: "Hauptverteiler EG, Schrank B",
@@ -37,7 +44,8 @@ const DEMO_MARKETS: Market[] = [
     parkingInfo: "Hinterhof Zufahrt, Code: siehe Tuercodes",
     doorCodes: "encrypted:7832",
     egateAccess: "Mitarbeitereingang Seite",
-    egateBarcode: "REWE2002EIMS",
+    kassenBarcode: "KASSE2002EIMS",
+    exitGateBarcode: "EXIT2002EIMS",
     barcodeInfo: "SCO Scanner Typ B",
     serverLocation: "IT-Raum 2. OG",
     switchRouterLocation: "Netzwerkschrank jede Etage",
@@ -57,7 +65,8 @@ const DEMO_MARKETS: Market[] = [
     parkingInfo: "Kundenparkplaetze vor dem Markt",
     doorCodes: "encrypted:1234",
     egateAccess: "Personaleingang hinten",
-    egateBarcode: "PENNY2003SCHW",
+    kassenBarcode: "KASSE2003SCHW",
+    exitGateBarcode: "EXIT2003SCHW",
     barcodeInfo: "Alle Scanner Typ C",
     serverLocation: "Keller Raum 005",
     switchRouterLocation: "Zentral im Keller",
@@ -75,6 +84,8 @@ const DEMO_MARKETS: Market[] = [
     city: "Koeln",
     parkingInfo: "Parkplaetze im Hinterhof",
     serverLocation: "Dachgeschoss Technikraum",
+    kvFlag: true,
+    kvReason: "Haeufige Fehlbedienung durch Marktpersonal",
     createdAt: "2024-01-08T08:00:00Z",
     updatedAt: "2024-01-08T08:00:00Z",
     createdBy: "3",
@@ -89,6 +100,7 @@ const DEMO_MARKETS: Market[] = [
     parkingInfo: "Grosser Kundenparkplatz",
     doorCodes: "encrypted:9999",
     egateAccess: "Haupteingang mit Badge",
+    kassenBarcode: "KASSE2005FFMHANA",
     serverLocation: "Buero 1. OG",
     switchRouterLocation: "Pro Etage ein Verteiler",
     specialNotes: "Citrix Umgebung",
@@ -106,7 +118,8 @@ const DEMO_MARKETS: Market[] = [
     parkingInfo: "Keine eigenen Parkplaetze, Tiefgarage nebenan",
     doorCodes: "encrypted:5566",
     egateAccess: "Keycard System",
-    egateBarcode: "REWE2006KOE",
+    kassenBarcode: "KASSE2006KOE",
+    exitGateBarcode: "EXIT2006KOE",
     serverLocation: "Lagerraum hinten",
     specialNotes: "Kleiner Markt, kompakte IT",
     createdAt: "2024-01-03T08:00:00Z",
@@ -164,9 +177,12 @@ export function useMarkets() {
       };
       const updatedLogs = [newLog, ...activityLogs];
       setActivityLogs(updatedLogs);
-      await AsyncStorage.setItem(ACTIVITY_LOGS_KEY, JSON.stringify(updatedLogs));
+      await AsyncStorage.setItem(
+        ACTIVITY_LOGS_KEY,
+        JSON.stringify(updatedLogs),
+      );
     },
-    [activityLogs]
+    [activityLogs],
   );
 
   const addMarketInfo = useCallback(
@@ -176,14 +192,21 @@ export function useMarkets() {
         id: Date.now().toString(),
         createdAt: new Date().toISOString(),
         status: "pending",
+        barcodeValue: info.barcodeValue,
       };
       const updatedInfos = [newInfo, ...marketInfos];
       setMarketInfos(updatedInfos);
-      await AsyncStorage.setItem(MARKET_INFOS_KEY, JSON.stringify(updatedInfos));
+      await AsyncStorage.setItem(
+        MARKET_INFOS_KEY,
+        JSON.stringify(updatedInfos),
+      );
 
       await addActivityLog({
         action: "add",
-        description: `Info hinzugefuegt: ${info.category}`,
+        description:
+          info.category === "barcode"
+            ? `Barcode hinzugefuegt: ${info.barcodeValue}`
+            : `Info hinzugefuegt: ${info.category}`,
         marketId: info.marketId,
         marketName: markets.find((m) => m.id === info.marketId)?.name,
         userId: info.createdBy,
@@ -192,16 +215,19 @@ export function useMarkets() {
 
       return newInfo;
     },
-    [marketInfos, markets, addActivityLog]
+    [marketInfos, markets, addActivityLog],
   );
 
   const approveMarketInfo = useCallback(
     async (infoId: string, userId: string, userName: string) => {
       const updatedInfos = marketInfos.map((info) =>
-        info.id === infoId ? { ...info, status: "approved" as const } : info
+        info.id === infoId ? { ...info, status: "approved" as const } : info,
       );
       setMarketInfos(updatedInfos);
-      await AsyncStorage.setItem(MARKET_INFOS_KEY, JSON.stringify(updatedInfos));
+      await AsyncStorage.setItem(
+        MARKET_INFOS_KEY,
+        JSON.stringify(updatedInfos),
+      );
 
       const info = marketInfos.find((i) => i.id === infoId);
       if (info) {
@@ -215,16 +241,19 @@ export function useMarkets() {
         });
       }
     },
-    [marketInfos, markets, addActivityLog]
+    [marketInfos, markets, addActivityLog],
   );
 
   const rejectMarketInfo = useCallback(
     async (infoId: string, userId: string, userName: string) => {
       const updatedInfos = marketInfos.map((info) =>
-        info.id === infoId ? { ...info, status: "rejected" as const } : info
+        info.id === infoId ? { ...info, status: "rejected" as const } : info,
       );
       setMarketInfos(updatedInfos);
-      await AsyncStorage.setItem(MARKET_INFOS_KEY, JSON.stringify(updatedInfos));
+      await AsyncStorage.setItem(
+        MARKET_INFOS_KEY,
+        JSON.stringify(updatedInfos),
+      );
 
       const info = marketInfos.find((i) => i.id === infoId);
       if (info) {
@@ -238,7 +267,7 @@ export function useMarkets() {
         });
       }
     },
-    [marketInfos, markets, addActivityLog]
+    [marketInfos, markets, addActivityLog],
   );
 
   const filteredMarkets = markets.filter((market) => {
@@ -254,21 +283,25 @@ export function useMarkets() {
 
   const getMarketById = useCallback(
     (id: string) => markets.find((m) => m.id === id),
-    [markets]
+    [markets],
   );
 
   const getMarketInfos = useCallback(
     (marketId: string) => marketInfos.filter((i) => i.marketId === marketId),
-    [marketInfos]
+    [marketInfos],
   );
 
   const getPendingInfos = useCallback(
     () => marketInfos.filter((i) => i.status === "pending"),
-    [marketInfos]
+    [marketInfos],
   );
 
   const addMarket = useCallback(
-    async (marketData: Omit<Market, "id" | "createdAt" | "updatedAt">, userId: string, userName: string) => {
+    async (
+      marketData: Omit<Market, "id" | "createdAt" | "updatedAt">,
+      userId: string,
+      userName: string,
+    ) => {
       const newMarket: Market = {
         ...marketData,
         id: Date.now().toString(),
@@ -291,24 +324,24 @@ export function useMarkets() {
 
       return newMarket;
     },
-    [markets, addActivityLog]
+    [markets, addActivityLog],
   );
 
   const updateMarketField = useCallback(
     async (
-      marketId: string, 
-      fieldName: keyof Market, 
-      newValue: string, 
-      userId: string, 
+      marketId: string,
+      fieldName: keyof Market,
+      newValue: string,
+      userId: string,
       userName: string,
-      fieldLabel: string
+      fieldLabel: string,
     ) => {
       const market = markets.find((m) => m.id === marketId);
       if (!market) return;
 
       const oldValue = market[fieldName] as string | undefined;
       const historyKey = `${fieldName}History` as keyof Market;
-      
+
       const historyEntry: FieldHistory = {
         value: oldValue || "",
         date: new Date().toLocaleDateString("de-DE"),
@@ -317,11 +350,14 @@ export function useMarkets() {
 
       const updatedMarkets = markets.map((m) => {
         if (m.id === marketId) {
-          const existingHistory = (m[historyKey] as FieldHistory[] | undefined) || [];
+          const existingHistory =
+            (m[historyKey] as FieldHistory[] | undefined) || [];
           return {
             ...m,
             [fieldName]: newValue,
-            [historyKey]: oldValue ? [historyEntry, ...existingHistory] : existingHistory,
+            [historyKey]: oldValue
+              ? [historyEntry, ...existingHistory]
+              : existingHistory,
             updatedAt: new Date().toISOString(),
           };
         }
@@ -343,14 +379,117 @@ export function useMarkets() {
         newValue: isSecure ? "****" : newValue,
       });
     },
-    [markets, addActivityLog]
+    [markets, addActivityLog],
   );
 
   const updateDoorCode = useCallback(
-    async (marketId: string, newCode: string, userId: string, userName: string) => {
-      await updateMarketField(marketId, "doorCodes", newCode, userId, userName, "Tuercode");
+    async (
+      marketId: string,
+      newCode: string,
+      userId: string,
+      userName: string,
+    ) => {
+      await updateMarketField(
+        marketId,
+        "doorCodes",
+        newCode,
+        userId,
+        userName,
+        "Tuercode",
+      );
     },
-    [updateMarketField]
+    [updateMarketField],
+  );
+
+  const deleteMarket = useCallback(
+    async (marketId: string, userId: string, userName: string) => {
+      const market = markets.find((m) => m.id === marketId);
+      if (!market) return;
+
+      const updatedMarkets = markets.filter((m) => m.id !== marketId);
+      setMarkets(updatedMarkets);
+      await AsyncStorage.setItem(MARKETS_KEY, JSON.stringify(updatedMarkets));
+
+      // Remove associated market infos
+      const updatedInfos = marketInfos.filter((i) => i.marketId !== marketId);
+      setMarketInfos(updatedInfos);
+      await AsyncStorage.setItem(
+        MARKET_INFOS_KEY,
+        JSON.stringify(updatedInfos),
+      );
+
+      await addActivityLog({
+        action: "delete",
+        description: `Markt geloescht: ${market.name}`,
+        marketId,
+        marketName: market.name,
+        userId,
+        userName,
+      });
+    },
+    [markets, marketInfos, addActivityLog],
+  );
+
+  const updateMarket = useCallback(
+    async (
+      marketId: string,
+      marketData: Partial<Omit<Market, "id" | "createdAt" | "createdBy">>,
+      userId: string,
+      userName: string,
+    ) => {
+      const market = markets.find((m) => m.id === marketId);
+      if (!market) return;
+
+      const updatedMarkets = markets.map((m) => {
+        if (m.id === marketId) {
+          return {
+            ...m,
+            ...marketData,
+            updatedAt: new Date().toISOString(),
+          };
+        }
+        return m;
+      });
+
+      setMarkets(updatedMarkets);
+      await AsyncStorage.setItem(MARKETS_KEY, JSON.stringify(updatedMarkets));
+
+      await addActivityLog({
+        action: "edit",
+        description: `Markt bearbeitet: ${market.name}`,
+        marketId,
+        marketName: marketData.name || market.name,
+        userId,
+        userName,
+      });
+
+      return updatedMarkets.find((m) => m.id === marketId);
+    },
+    [markets, addActivityLog],
+  );
+
+  const deleteMarketInfo = useCallback(
+    async (infoId: string, userId: string, userName: string) => {
+      const info = marketInfos.find((i) => i.id === infoId);
+      if (!info) return;
+
+      const updatedInfos = marketInfos.filter((i) => i.id !== infoId);
+      setMarketInfos(updatedInfos);
+      await AsyncStorage.setItem(
+        MARKET_INFOS_KEY,
+        JSON.stringify(updatedInfos),
+      );
+
+      await addActivityLog({
+        action: "delete",
+        description: `Info geloescht: ${info.category}`,
+        marketId: info.marketId,
+        marketName: markets.find((m) => m.id === info.marketId)?.name,
+        userId,
+        userName,
+      });
+    },
+    [marketInfos, markets, addActivityLog],
   );
 
   const refresh = useCallback(() => {
@@ -376,6 +515,9 @@ export function useMarkets() {
     addMarket,
     updateMarketField,
     updateDoorCode,
+    deleteMarket,
+    updateMarket,
+    deleteMarketInfo,
     refresh,
   };
 }

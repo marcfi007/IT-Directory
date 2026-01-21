@@ -69,7 +69,9 @@ export default function MainTabNavigator() {
           title: "Scan",
           tabBarIcon: ({ color, size }) => (
             <View style={styles.scanIconContainer}>
-              <View style={[styles.scanIconBg, { backgroundColor: theme.primary }]}>
+              <View
+                style={[styles.scanIconBg, { backgroundColor: theme.primary }]}
+              >
                 <Feather name="maximize" size={22} color="#FFFFFF" />
               </View>
             </View>
@@ -97,7 +99,9 @@ export default function MainTabNavigator() {
             <View>
               <Feather name="user" size={size} color={color} />
               {pendingCount > 0 ? (
-                <View style={[styles.badge, { backgroundColor: theme.pending }]} />
+                <View
+                  style={[styles.badge, { backgroundColor: theme.pending }]}
+                />
               ) : null}
             </View>
           ),

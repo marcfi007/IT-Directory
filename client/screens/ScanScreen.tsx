@@ -21,7 +21,7 @@ export default function ScanScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { theme } = useTheme();
   const { allMarkets } = useMarketContext();
-  
+
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [lastScanned, setLastScanned] = useState<string | null>(null);
@@ -29,13 +29,13 @@ export default function ScanScreen() {
 
   const handleBarCodeScanned = ({ data }: { data: string }) => {
     if (scanned) return;
-    
+
     setScanned(true);
     setLastScanned(data);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
     const market = allMarkets.find(
-      (m) => m.egateBarcode === data || m.wawiNumber === data
+      (m) => m.egateBarcode === data || m.wawiNumber === data,
     );
 
     if (market) {
@@ -63,15 +63,25 @@ export default function ScanScreen() {
   if (!permission.granted) {
     return (
       <ThemedView style={styles.container}>
-        <View style={[styles.centered, { paddingTop: insets.top + Spacing["4xl"] }]}>
-          <View style={[styles.iconContainer, { backgroundColor: theme.primary + "15" }]}>
+        <View
+          style={[styles.centered, { paddingTop: insets.top + Spacing["4xl"] }]}
+        >
+          <View
+            style={[
+              styles.iconContainer,
+              { backgroundColor: theme.primary + "15" },
+            ]}
+          >
             <Feather name="camera-off" size={48} color={theme.primary} />
           </View>
           <ThemedText type="h3" style={styles.permissionTitle}>
             Kamera-Zugriff erforderlich
           </ThemedText>
-          <ThemedText style={[styles.permissionText, { color: theme.textSecondary }]}>
-            Um QR-Codes und Barcodes zu scannen, benoetigen wir Zugriff auf Ihre Kamera.
+          <ThemedText
+            style={[styles.permissionText, { color: theme.textSecondary }]}
+          >
+            Um QR-Codes und Barcodes zu scannen, benoetigen wir Zugriff auf Ihre
+            Kamera.
           </ThemedText>
           <Button onPress={requestPermission} style={styles.permissionButton}>
             Kamera aktivieren
@@ -84,15 +94,25 @@ export default function ScanScreen() {
   if (Platform.OS === "web") {
     return (
       <ThemedView style={styles.container}>
-        <View style={[styles.centered, { paddingTop: insets.top + Spacing["4xl"] }]}>
-          <View style={[styles.iconContainer, { backgroundColor: theme.primary + "15" }]}>
+        <View
+          style={[styles.centered, { paddingTop: insets.top + Spacing["4xl"] }]}
+        >
+          <View
+            style={[
+              styles.iconContainer,
+              { backgroundColor: theme.primary + "15" },
+            ]}
+          >
             <Feather name="smartphone" size={48} color={theme.primary} />
           </View>
           <ThemedText type="h3" style={styles.permissionTitle}>
             Scanner nur auf Mobilgeraet
           </ThemedText>
-          <ThemedText style={[styles.permissionText, { color: theme.textSecondary }]}>
-            Bitte nutzen Sie die Expo Go App auf Ihrem Smartphone, um den Barcode-Scanner zu verwenden.
+          <ThemedText
+            style={[styles.permissionText, { color: theme.textSecondary }]}
+          >
+            Bitte nutzen Sie die Expo Go App auf Ihrem Smartphone, um den
+            Barcode-Scanner zu verwenden.
           </ThemedText>
         </View>
       </ThemedView>
@@ -114,7 +134,10 @@ export default function ScanScreen() {
       <View style={[styles.overlay, { paddingTop: insets.top }]}>
         <Pressable
           onPress={toggleTorch}
-          style={[styles.torchButton, { backgroundColor: torch ? theme.primary : "rgba(0,0,0,0.5)" }]}
+          style={[
+            styles.torchButton,
+            { backgroundColor: torch ? theme.primary : "rgba(0,0,0,0.5)" },
+          ]}
         >
           <Feather name={torch ? "zap" : "zap-off"} size={24} color="#FFFFFF" />
         </Pressable>
@@ -127,16 +150,28 @@ export default function ScanScreen() {
         <View style={[styles.corner, styles.bottomRight]} />
       </View>
 
-      <View style={[styles.bottomSheet, { paddingBottom: insets.bottom + Spacing.lg }]}>
+      <View
+        style={[
+          styles.bottomSheet,
+          { paddingBottom: insets.bottom + Spacing.lg },
+        ]}
+      >
         <ThemedText type="h4" style={styles.scanTitle}>
           QR-Code oder Barcode scannen
         </ThemedText>
-        <ThemedText style={[styles.scanHint, { color: "rgba(255,255,255,0.7)" }]}>
+        <ThemedText
+          style={[styles.scanHint, { color: "rgba(255,255,255,0.7)" }]}
+        >
           Richten Sie die Kamera auf einen eGate-Barcode oder WAWI-Nummer
         </ThemedText>
 
         {lastScanned ? (
-          <View style={[styles.lastScannedBox, { backgroundColor: "rgba(255,255,255,0.15)" }]}>
+          <View
+            style={[
+              styles.lastScannedBox,
+              { backgroundColor: "rgba(255,255,255,0.15)" },
+            ]}
+          >
             <Feather name="check-circle" size={18} color={theme.verified} />
             <ThemedText style={styles.lastScannedText} numberOfLines={1}>
               Gescannt: {lastScanned}

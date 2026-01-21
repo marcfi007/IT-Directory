@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { View, TextInput, StyleSheet, Pressable, TextInputProps } from "react-native";
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  Pressable,
+  TextInputProps,
+} from "react-native";
 import { Feather } from "@expo/vector-icons";
 import Animated, {
   useAnimatedStyle,
@@ -96,7 +102,10 @@ export function Input({
           {...props}
         />
         {secureTextEntry ? (
-          <Pressable onPress={togglePasswordVisibility} style={styles.rightIcon}>
+          <Pressable
+            onPress={togglePasswordVisibility}
+            style={styles.rightIcon}
+          >
             <Feather
               name={showPassword ? "eye-off" : "eye"}
               size={20}

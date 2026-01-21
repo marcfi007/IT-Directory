@@ -47,17 +47,32 @@ export function InfoSection({
   }));
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: theme.cardBackground, borderColor: theme.border },
+      ]}
+    >
       <Pressable onPress={toggleExpanded} style={styles.header}>
         <View style={styles.titleRow}>
-          <View style={[styles.iconContainer, { backgroundColor: theme.primary + "15" }]}>
+          <View
+            style={[
+              styles.iconContainer,
+              { backgroundColor: theme.primary + "15" },
+            ]}
+          >
             <Feather name={icon} size={18} color={theme.primary} />
           </View>
           <ThemedText type="h4" style={styles.title}>
             {title}
           </ThemedText>
           {isSecure ? (
-            <View style={[styles.secureIndicator, { backgroundColor: theme.encrypted + "20" }]}>
+            <View
+              style={[
+                styles.secureIndicator,
+                { backgroundColor: theme.encrypted + "20" },
+              ]}
+            >
               <Feather name="lock" size={12} color={theme.encrypted} />
             </View>
           ) : null}

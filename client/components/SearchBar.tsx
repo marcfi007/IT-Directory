@@ -17,7 +17,11 @@ interface SearchBarProps {
 
 const AnimatedView = Animated.createAnimatedComponent(View);
 
-export function SearchBar({ value, onChangeText, placeholder = "Suchen..." }: SearchBarProps) {
+export function SearchBar({
+  value,
+  onChangeText,
+  placeholder = "Suchen...",
+}: SearchBarProps) {
   const { theme } = useTheme();
   const [isFocused, setIsFocused] = useState(false);
   const borderWidth = useSharedValue(1);
@@ -58,10 +62,7 @@ export function SearchBar({ value, onChangeText, placeholder = "Suchen..." }: Se
         style={styles.icon}
       />
       <TextInput
-        style={[
-          styles.input,
-          { color: theme.text },
-        ]}
+        style={[styles.input, { color: theme.text }]}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}

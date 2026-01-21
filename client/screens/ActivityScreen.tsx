@@ -18,11 +18,14 @@ export default function ActivityScreen() {
   const { theme } = useTheme();
   const { activityLogs, isLoading, refresh } = useMarketContext();
 
-  const renderItem = useCallback(({ item, index }: { item: ActivityLog; index: number }) => (
-    <Animated.View entering={FadeInDown.delay(index * 30).duration(250)}>
-      <ActivityItem log={item} />
-    </Animated.View>
-  ), []);
+  const renderItem = useCallback(
+    ({ item, index }: { item: ActivityLog; index: number }) => (
+      <Animated.View entering={FadeInDown.delay(index * 30).duration(250)}>
+        <ActivityItem log={item} />
+      </Animated.View>
+    ),
+    [],
+  );
 
   const renderEmpty = useCallback(() => {
     if (isLoading) return null;

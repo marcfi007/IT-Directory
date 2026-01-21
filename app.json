@@ -1,35 +1,44 @@
 {
   "expo": {
-    "name": "Techniker Verzeichnissapp",
-    "slug": "technikerverzeichnissapp",
+    "name": "IT-Markt Verzeichnis",
+    "slug": "it-markt-verzeichnis",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "technikerverzeichnissapp",
+    "scheme": "itmarktverzeichnis",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "owner": "it-markt",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.technikerverzeichnissapp.app",
+      "bundleIdentifier": "de.itmarkt.verzeichnis",
       "infoPlist": {
-        "NSCameraUsageDescription": "Diese App benoetigt Zugriff auf die Kamera, um QR-Codes und Barcodes zu scannen."
+        "NSCameraUsageDescription": "Diese App benoetigt Zugriff auf die Kamera, um QR-Codes und Barcodes zu scannen.",
+        "NSFaceIDUsageDescription": "Verwenden Sie Face ID fuer eine schnelle und sichere Anmeldung."
       }
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#1565C0",
-        "foregroundImage": "./assets/images/icon.png"
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.technikerverzeichnissapp.app",
+      "package": "de.itmarkt.verzeichnis",
       "permissions": [
-        "android.permission.CAMERA"
+        "android.permission.CAMERA",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
       ]
     },
     "web": {
       "output": "single",
-      "favicon": "./assets/images/icon.png"
+      "favicon": "./assets/images/favicon.png",
+      "name": "IT-Markt Verzeichnis",
+      "shortName": "IT-Markt",
+      "description": "Mobile App fuer IT-Servicetechniker zur Verwaltung von Markt-Informationen"
     },
     "plugins": [
       [
@@ -50,10 +59,21 @@
         {
           "cameraPermission": "Diese App benoetigt Zugriff auf die Kamera, um QR-Codes und Barcodes zu scannen."
         }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Verwenden Sie Face ID fuer eine schnelle und sichere Anmeldung."
+        }
       ]
     ],
     "experiments": {
       "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id"
+      }
     }
   }
 }

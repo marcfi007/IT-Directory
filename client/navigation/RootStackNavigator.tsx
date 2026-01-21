@@ -6,6 +6,9 @@ import MarketDetailScreen from "@/screens/MarketDetailScreen";
 import AddInfoScreen from "@/screens/AddInfoScreen";
 import AddMarketScreen from "@/screens/AddMarketScreen";
 import AdminPanelScreen from "@/screens/AdminPanelScreen";
+import NotificationsSettingsScreen from "@/screens/NotificationsSettingsScreen";
+import SecuritySettingsScreen from "@/screens/SecuritySettingsScreen";
+import AboutScreen from "@/screens/AboutScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -16,6 +19,9 @@ export type RootStackParamList = {
   AddInfo: { marketId: string | undefined };
   AddMarket: undefined;
   AdminPanel: undefined;
+  NotificationsSettings: undefined;
+  SecuritySettings: undefined;
+  About: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -62,6 +68,21 @@ export default function RootStackNavigator() {
             name="AdminPanel"
             component={AdminPanelScreen}
             options={{ headerTitle: "Admin-Bereich" }}
+          />
+          <Stack.Screen
+            name="NotificationsSettings"
+            component={NotificationsSettingsScreen}
+            options={{ headerTitle: "Benachrichtigungen" }}
+          />
+          <Stack.Screen
+            name="SecuritySettings"
+            component={SecuritySettingsScreen}
+            options={{ headerTitle: "Sicherheit" }}
+          />
+          <Stack.Screen
+            name="About"
+            component={AboutScreen}
+            options={{ headerTitle: "Ueber die App" }}
           />
         </>
       ) : (

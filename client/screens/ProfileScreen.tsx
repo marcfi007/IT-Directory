@@ -1,6 +1,5 @@
-import React, { useState } from "react";
-import { View, StyleSheet, ScrollView, Pressable, Alert } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import React from "react";
+import { View, StyleSheet, ScrollView, Pressable } from "react-native";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useNavigation } from "@react-navigation/native";
@@ -19,7 +18,6 @@ import { RootStackParamList } from "@/navigation/RootStackNavigator";
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function ProfileScreen() {
-  const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const tabBarHeight = useBottomTabBarHeight();
   const navigation = useNavigation<NavigationProp>();
@@ -28,7 +26,9 @@ export default function ProfileScreen() {
   const { getPendingInfos, activityLogs } = useMarketContext();
 
   const pendingInfos = getPendingInfos();
-  const userActivities = activityLogs.filter((log) => log.userId === user?.id).length;
+  const userActivities = activityLogs.filter(
+    (log) => log.userId === user?.id,
+  ).length;
 
   const handleLogout = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -38,6 +38,21 @@ export default function ProfileScreen() {
   const handleAdminPanel = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     navigation.navigate("AdminPanel");
+  };
+
+  const handleNotificationsSettings = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate("NotificationsSettings");
+  };
+
+  const handleSecuritySettings = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate("SecuritySettings");
+  };
+
+  const handleAbout = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate("About");
   };
 
   if (!user) return null;
@@ -57,32 +72,49 @@ export default function ProfileScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={[styles.profileCard, { backgroundColor: theme.cardBackground }, Shadows.card]}>
+        <View
+          style={[
+            styles.profileCard,
+            { backgroundColor: theme.cardBackground },
+            Shadows.card,
+          ]}
+        >
           <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
             <ThemedText style={styles.avatarText}>
-              {user.name.split(" ").map((n) => n[0]).join("")}
+              {user.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")}
             </ThemedText>
           </View>
           <ThemedText type="h3" style={styles.userName}>
             {user.name}
           </ThemedText>
-          <ThemedText style={[styles.userEmail, { color: theme.textSecondary }]}>
+          <ThemedText
+            style={[styles.userEmail, { color: theme.textSecondary }]}
+          >
             {user.email}
           </ThemedText>
           <RoleBadge role={user.role} size="large" style={styles.roleBadge} />
         </View>
 
         <View style={styles.statsRow}>
-          <View style={[styles.statCard, { backgroundColor: theme.cardBackground }]}>
+          <View
+            style={[styles.statCard, { backgroundColor: theme.cardBackground }]}
+          >
             <Feather name="activity" size={24} color={theme.primary} />
             <ThemedText type="h3" style={styles.statValue}>
               {userActivities}
             </ThemedText>
-            <ThemedText style={[styles.statLabel, { color: theme.textSecondary }]}>
+            <ThemedText
+              style={[styles.statLabel, { color: theme.textSecondary }]}
+            >
               Aktivitaeten
             </ThemedText>
           </View>
-          <View style={[styles.statCard, { backgroundColor: theme.cardBackground }]}>
+          <View
+            style={[styles.statCard, { backgroundColor: theme.cardBackground }]}
+          >
             <Feather
               name={user.twoFactorEnabled ? "shield" : "shield-off"}
               size={24}
@@ -92,12 +124,16 @@ export default function ProfileScreen() {
               type="h4"
               style={[
                 styles.statValue,
-                { color: user.twoFactorEnabled ? theme.verified : theme.warning },
+                {
+                  color: user.twoFactorEnabled ? theme.verified : theme.warning,
+                },
               ]}
             >
               {user.twoFactorEnabled ? "Aktiv" : "Inaktiv"}
             </ThemedText>
-            <ThemedText style={[styles.statLabel, { color: theme.textSecondary }]}>
+            <ThemedText
+              style={[styles.statLabel, { color: theme.textSecondary }]}
+            >
               2FA Status
             </ThemedText>
           </View>
@@ -106,24 +142,43 @@ export default function ProfileScreen() {
         {isAdmin ? (
           <Pressable
             onPress={handleAdminPanel}
-            style={[styles.adminButton, { backgroundColor: theme.roleAdmin + "15", borderColor: theme.roleAdmin }]}
+            style={[
+              styles.adminButton,
+              {
+                backgroundColor: theme.roleAdmin + "15",
+                borderColor: theme.roleAdmin,
+              },
+            ]}
           >
             <View style={styles.adminButtonContent}>
-              <View style={[styles.adminIcon, { backgroundColor: theme.roleAdmin }]}>
+              <View
+                style={[styles.adminIcon, { backgroundColor: theme.roleAdmin }]}
+              >
                 <Feather name="settings" size={20} color="#FFFFFF" />
               </View>
               <View style={styles.adminTextContainer}>
-                <ThemedText style={[styles.adminTitle, { color: theme.roleAdmin }]}>
+                <ThemedText
+                  style={[styles.adminTitle, { color: theme.roleAdmin }]}
+                >
                   Admin-Bereich
                 </ThemedText>
-                <ThemedText style={[styles.adminSubtitle, { color: theme.textSecondary }]}>
+                <ThemedText
+                  style={[styles.adminSubtitle, { color: theme.textSecondary }]}
+                >
                   Benutzer, Freigaben, Audit-Logs
                 </ThemedText>
               </View>
             </View>
             {pendingInfos.length > 0 ? (
-              <View style={[styles.pendingBadge, { backgroundColor: theme.pending }]}>
-                <ThemedText style={styles.pendingText}>{pendingInfos.length}</ThemedText>
+              <View
+                style={[
+                  styles.pendingBadge,
+                  { backgroundColor: theme.pending },
+                ]}
+              >
+                <ThemedText style={styles.pendingText}>
+                  {pendingInfos.length}
+                </ThemedText>
               </View>
             ) : null}
             <Feather name="chevron-right" size={20} color={theme.roleAdmin} />
@@ -131,20 +186,36 @@ export default function ProfileScreen() {
         ) : null}
 
         {isDeveloper ? (
-          <View style={[styles.devSection, { backgroundColor: theme.cardBackground }]}>
+          <View
+            style={[
+              styles.devSection,
+              { backgroundColor: theme.cardBackground },
+            ]}
+          >
             <View style={styles.devHeader}>
               <Feather name="code" size={20} color={theme.roleDeveloper} />
-              <ThemedText style={[styles.devTitle, { color: theme.roleDeveloper }]}>
+              <ThemedText
+                style={[styles.devTitle, { color: theme.roleDeveloper }]}
+              >
                 Entwickler-Tools
               </ThemedText>
             </View>
             <View style={styles.devInfo}>
-              <ThemedText style={[styles.devLabel, { color: theme.textSecondary }]}>
+              <ThemedText
+                style={[styles.devLabel, { color: theme.textSecondary }]}
+              >
                 API-Status
               </ThemedText>
               <View style={styles.statusRow}>
-                <View style={[styles.statusDot, { backgroundColor: theme.verified }]} />
-                <ThemedText style={[styles.statusText, { color: theme.verified }]}>
+                <View
+                  style={[
+                    styles.statusDot,
+                    { backgroundColor: theme.verified },
+                  ]}
+                />
+                <ThemedText
+                  style={[styles.statusText, { color: theme.verified }]}
+                >
                   Online
                 </ThemedText>
               </View>
@@ -152,27 +223,46 @@ export default function ProfileScreen() {
           </View>
         ) : null}
 
-        <View style={[styles.section, { backgroundColor: theme.cardBackground }]}>
-          <ThemedText style={[styles.sectionTitle, { color: theme.textSecondary }]}>
+        <View
+          style={[styles.section, { backgroundColor: theme.cardBackground }]}
+        >
+          <ThemedText
+            style={[styles.sectionTitle, { color: theme.textSecondary }]}
+          >
             Einstellungen
           </ThemedText>
-          
-          <Pressable style={styles.menuItem}>
+
+          <Pressable
+            style={styles.menuItem}
+            onPress={handleNotificationsSettings}
+          >
             <Feather name="bell" size={20} color={theme.text} />
             <ThemedText style={styles.menuLabel}>Benachrichtigungen</ThemedText>
-            <Feather name="chevron-right" size={18} color={theme.textSecondary} />
+            <Feather
+              name="chevron-right"
+              size={18}
+              color={theme.textSecondary}
+            />
           </Pressable>
-          
-          <Pressable style={styles.menuItem}>
+
+          <Pressable style={styles.menuItem} onPress={handleSecuritySettings}>
             <Feather name="lock" size={20} color={theme.text} />
             <ThemedText style={styles.menuLabel}>Sicherheit</ThemedText>
-            <Feather name="chevron-right" size={18} color={theme.textSecondary} />
+            <Feather
+              name="chevron-right"
+              size={18}
+              color={theme.textSecondary}
+            />
           </Pressable>
-          
-          <Pressable style={styles.menuItem}>
+
+          <Pressable style={styles.menuItem} onPress={handleAbout}>
             <Feather name="info" size={20} color={theme.text} />
             <ThemedText style={styles.menuLabel}>Ueber die App</ThemedText>
-            <Feather name="chevron-right" size={18} color={theme.textSecondary} />
+            <Feather
+              name="chevron-right"
+              size={18}
+              color={theme.textSecondary}
+            />
           </Pressable>
         </View>
 

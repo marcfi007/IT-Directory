@@ -28,7 +28,8 @@ export default function AddMarketScreen() {
   const [parkingInfo, setParkingInfo] = useState("");
   const [doorCodes, setDoorCodes] = useState("");
   const [egateAccess, setEgateAccess] = useState("");
-  const [egateBarcode, setEgateBarcode] = useState("");
+  const [kassenBarcode, setKassenBarcode] = useState("");
+  const [exitGateBarcode, setExitGateBarcode] = useState("");
   const [serverLocation, setServerLocation] = useState("");
   const [switchRouterLocation, setSwitchRouterLocation] = useState("");
   const [specialNotes, setSpecialNotes] = useState("");
@@ -76,9 +77,12 @@ export default function AddMarketScreen() {
           city: city.trim(),
           contactPerson: contactPerson.trim() || undefined,
           parkingInfo: parkingInfo.trim() || undefined,
-          doorCodes: doorCodes.trim() ? `encrypted:${doorCodes.trim()}` : undefined,
+          doorCodes: doorCodes.trim()
+            ? `encrypted:${doorCodes.trim()}`
+            : undefined,
           egateAccess: egateAccess.trim() || undefined,
-          egateBarcode: egateBarcode.trim() || undefined,
+          kassenBarcode: kassenBarcode.trim() || undefined,
+          exitGateBarcode: exitGateBarcode.trim() || undefined,
           serverLocation: serverLocation.trim() || undefined,
           switchRouterLocation: switchRouterLocation.trim() || undefined,
           specialNotes: specialNotes.trim() || undefined,
@@ -86,7 +90,7 @@ export default function AddMarketScreen() {
           createdBy: user.id,
         },
         user.id,
-        user.name
+        user.name,
       );
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -104,12 +108,23 @@ export default function AddMarketScreen() {
       <ScrollView
         contentContainerStyle={[
           styles.content,
-          { paddingTop: headerHeight + Spacing.md, paddingBottom: insets.bottom + Spacing["2xl"] },
+          {
+            paddingTop: headerHeight + Spacing.md,
+            paddingBottom: insets.bottom + Spacing["2xl"],
+          },
         ]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={[styles.section, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+        <View
+          style={[
+            styles.section,
+            {
+              backgroundColor: theme.cardBackground,
+              borderColor: theme.border,
+            },
+          ]}
+        >
           <ThemedText style={[styles.sectionTitle, { color: theme.primary }]}>
             Pflichtangaben
           </ThemedText>
@@ -148,7 +163,15 @@ export default function AddMarketScreen() {
           />
         </View>
 
-        <View style={[styles.section, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+        <View
+          style={[
+            styles.section,
+            {
+              backgroundColor: theme.cardBackground,
+              borderColor: theme.border,
+            },
+          ]}
+        >
           <ThemedText style={[styles.sectionTitle, { color: theme.primary }]}>
             Kontakt & Zugang
           </ThemedText>
@@ -184,17 +207,47 @@ export default function AddMarketScreen() {
             onChangeText={setEgateAccess}
             leftIcon="key"
           />
+        </View>
+
+        <View
+          style={[
+            styles.section,
+            {
+              backgroundColor: theme.cardBackground,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <ThemedText style={[styles.sectionTitle, { color: theme.primary }]}>
+            Barcodes
+          </ThemedText>
 
           <Input
-            label="eGate-Barcode"
-            placeholder="z.B. MM1006MITTE"
-            value={egateBarcode}
-            onChangeText={setEgateBarcode}
+            label="Kassen-Barcode"
+            placeholder="z.B. KASSE2001ALEX"
+            value={kassenBarcode}
+            onChangeText={setKassenBarcode}
+            leftIcon="maximize"
+          />
+
+          <Input
+            label="ExitGate-Barcode"
+            placeholder="z.B. EXIT2001ALEX"
+            value={exitGateBarcode}
+            onChangeText={setExitGateBarcode}
             leftIcon="maximize"
           />
         </View>
 
-        <View style={[styles.section, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+        <View
+          style={[
+            styles.section,
+            {
+              backgroundColor: theme.cardBackground,
+              borderColor: theme.border,
+            },
+          ]}
+        >
           <ThemedText style={[styles.sectionTitle, { color: theme.primary }]}>
             IT-Infrastruktur
           </ThemedText>
@@ -238,7 +291,11 @@ export default function AddMarketScreen() {
           </ThemedText>
         ) : null}
 
-        <Button onPress={handleSubmit} disabled={isLoading} style={styles.submitButton}>
+        <Button
+          onPress={handleSubmit}
+          disabled={isLoading}
+          style={styles.submitButton}
+        >
           {isLoading ? (
             <ActivityIndicator color="#FFFFFF" size="small" />
           ) : (

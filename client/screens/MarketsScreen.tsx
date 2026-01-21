@@ -1,5 +1,12 @@
 import React, { useCallback, useState } from "react";
-import { FlatList, View, StyleSheet, RefreshControl, Pressable, Modal } from "react-native";
+import {
+  FlatList,
+  View,
+  StyleSheet,
+  RefreshControl,
+  Pressable,
+  Modal,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
@@ -40,9 +47,12 @@ export default function MarketsScreen() {
   const [showMenu, setShowMenu] = useState(false);
   const pendingInfos = getPendingInfos();
 
-  const handleMarketPress = useCallback((market: Market) => {
-    navigation.navigate("MarketDetail", { marketId: market.id });
-  }, [navigation]);
+  const handleMarketPress = useCallback(
+    (market: Market) => {
+      navigation.navigate("MarketDetail", { marketId: market.id });
+    },
+    [navigation],
+  );
 
   const handleAddMarket = useCallback(() => {
     setShowMenu(false);
@@ -61,18 +71,23 @@ export default function MarketsScreen() {
     setShowMenu(!showMenu);
   }, [showMenu]);
 
-  const renderItem = useCallback(({ item, index }: { item: Market; index: number }) => {
-    const hasPendingInfo = pendingInfos.some((info) => info.marketId === item.id);
-    return (
-      <Animated.View entering={FadeInDown.delay(index * 50).duration(300)}>
-        <MarketCard
-          market={item}
-          onPress={() => handleMarketPress(item)}
-          hasPendingInfo={hasPendingInfo}
-        />
-      </Animated.View>
-    );
-  }, [handleMarketPress, pendingInfos]);
+  const renderItem = useCallback(
+    ({ item, index }: { item: Market; index: number }) => {
+      const hasPendingInfo = pendingInfos.some(
+        (info) => info.marketId === item.id,
+      );
+      return (
+        <Animated.View entering={FadeInDown.delay(index * 50).duration(300)}>
+          <MarketCard
+            market={item}
+            onPress={() => handleMarketPress(item)}
+            hasPendingInfo={hasPendingInfo}
+          />
+        </Animated.View>
+      );
+    },
+    [handleMarketPress, pendingInfos],
+  );
 
   const renderEmpty = useCallback(() => {
     if (isLoading) return null;
@@ -80,22 +95,29 @@ export default function MarketsScreen() {
       <EmptyState
         image={require("../../assets/images/empty-markets.png")}
         title="Keine Maerkte gefunden"
-        description={searchQuery ? "Versuchen Sie eine andere Suche" : "Es wurden noch keine Maerkte angelegt"}
+        description={
+          searchQuery
+            ? "Versuchen Sie eine andere Suche"
+            : "Es wurden noch keine Maerkte angelegt"
+        }
         actionLabel="Markt hinzufuegen"
         onAction={handleAddMarket}
       />
     );
   }, [isLoading, searchQuery, handleAddMarket]);
 
-  const renderHeader = useCallback(() => (
-    <View style={styles.searchContainer}>
-      <SearchBar
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        placeholder="WAWI-Nr., Name, Stadt..."
-      />
-    </View>
-  ), [searchQuery, setSearchQuery]);
+  const renderHeader = useCallback(
+    () => (
+      <View style={styles.searchContainer}>
+        <SearchBar
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="WAWI-Nr., Name, Stadt..."
+        />
+      </View>
+    ),
+    [searchQuery, setSearchQuery],
+  );
 
   return (
     <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
@@ -126,29 +148,43 @@ export default function MarketsScreen() {
       />
 
       {showMenu ? (
-        <Pressable 
-          style={styles.menuOverlay} 
+        <Pressable
+          style={styles.menuOverlay}
           onPress={() => setShowMenu(false)}
         >
-          <Animated.View 
+          <Animated.View
             entering={FadeIn.duration(150)}
             exiting={FadeOut.duration(100)}
             style={[styles.menuContainer, { bottom: tabBarHeight + 80 }]}
           >
             <Pressable
               onPress={handleAddMarket}
-              style={[styles.menuItem, { backgroundColor: theme.cardBackground }, Shadows.card]}
+              style={[
+                styles.menuItem,
+                { backgroundColor: theme.cardBackground },
+                Shadows.card,
+              ]}
             >
-              <View style={[styles.menuIcon, { backgroundColor: theme.primary }]}>
+              <View
+                style={[styles.menuIcon, { backgroundColor: theme.primary }]}
+              >
                 <Feather name="shopping-bag" size={18} color="#FFFFFF" />
               </View>
-              <ThemedText style={styles.menuLabel}>Neuen Markt anlegen</ThemedText>
+              <ThemedText style={styles.menuLabel}>
+                Neuen Markt anlegen
+              </ThemedText>
             </Pressable>
             <Pressable
               onPress={handleAddInfo}
-              style={[styles.menuItem, { backgroundColor: theme.cardBackground }, Shadows.card]}
+              style={[
+                styles.menuItem,
+                { backgroundColor: theme.cardBackground },
+                Shadows.card,
+              ]}
             >
-              <View style={[styles.menuIcon, { backgroundColor: theme.accent }]}>
+              <View
+                style={[styles.menuIcon, { backgroundColor: theme.accent }]}
+              >
                 <Feather name="file-plus" size={18} color="#FFFFFF" />
               </View>
               <ThemedText style={styles.menuLabel}>Info hinzufuegen</ThemedText>
@@ -161,18 +197,14 @@ export default function MarketsScreen() {
         onPress={toggleMenu}
         style={[
           styles.fab,
-          { 
-            backgroundColor: showMenu ? theme.error : theme.primary, 
+          {
+            backgroundColor: showMenu ? theme.error : theme.primary,
             bottom: tabBarHeight + Spacing.lg,
           },
           Shadows.fab,
         ]}
       >
-        <Feather 
-          name={showMenu ? "x" : "plus"} 
-          size={24} 
-          color="#FFFFFF" 
-        />
+        <Feather name={showMenu ? "x" : "plus"} size={24} color="#FFFFFF" />
       </Pressable>
     </View>
   );
